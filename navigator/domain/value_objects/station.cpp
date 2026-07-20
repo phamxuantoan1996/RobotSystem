@@ -1,6 +1,6 @@
 #include "station.hpp"
 #include <regex>
-namespace robot_system::domain::value_objects::navigation {
+namespace navigator::domain::value_objects {
     Station::Station(const std::string& id) : id_(id)
     {
         std::regex pattern1("^LM\\d+$"); // check station co dung dinh dang LM

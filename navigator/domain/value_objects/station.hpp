@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-namespace robot_system::domain::value_objects::navigation {
+namespace navigator::domain::value_objects {
     class Station {
         public:
             explicit Station(const std::string& id);
