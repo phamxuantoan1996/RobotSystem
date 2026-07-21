@@ -20,22 +20,22 @@ namespace navigator::domain::value_objects {
         return *this;
     }
 
-    bool Location::operator==(const Location& other)
+    bool Location::operator==(const Location& other) const
     {
         return (x_ == other.x_) && (y_ == other.y_) && (angle_ == other.angle_);
     }
 
-    double Location::getX()
+    double Location::getX() const
     {
         return x_;
     }
 
-    double Location::getY()
+    double Location::getY() const
     {
         return y_;
     }
 
-    double Location::getAngle()
+    double Location::getAngle() const
     {
         return angle_;
     }

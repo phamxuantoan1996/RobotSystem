@@ -10,11 +10,11 @@ namespace navigator::domain::value_objects {
             Location& operator=(const Location& other);
             Location& operator=(Location&& other) = delete;
 
-            bool operator==(const Location& other);
+            bool operator==(const Location& other) const;
             
-            double getX();
-            double getY();
-            double getAngle();
+            double getX() const;
+            double getY() const;
+            double getAngle() const;
 
         private:
             const double x_;
