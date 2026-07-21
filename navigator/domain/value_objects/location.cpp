@@ -15,11 +15,6 @@ namespace navigator::domain::value_objects {
         
     }
 
-    Location& Location::operator=(const Location& other)
-    {
-        return *this;
-    }
-
     bool Location::operator==(const Location& other) const
     {
         return (x_ == other.x_) && (y_ == other.y_) && (angle_ == other.angle_);

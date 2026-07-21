@@ -7,7 +7,7 @@ namespace navigator::domain::value_objects {
             Location(const Location& other);
             Location(Location&& other) = delete;
 
-            Location& operator=(const Location& other);
+            Location& operator=(const Location& other) = delete;
             Location& operator=(Location&& other) = delete;
 
             bool operator==(const Location& other) const;
