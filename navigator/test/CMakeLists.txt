@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.14)
 # Tạo file thực thi bài test riêng cho phân hệ navigator
 add_executable(navigator_tests 
     station_test.cpp
+    location_test.cpp
+    velocity_test.cpp
 )
 
 # Đảm bảo file test tìm thấy file header .hpp của class Station
