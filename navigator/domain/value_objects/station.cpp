@@ -16,6 +16,11 @@ namespace navigator::domain::value_objects {
 
     }
 
+    bool Station::operator==(const Station& other) const
+    {
+        return this->id_ == other.id_;
+    }
+
     std::string Station::getId() const
     {
         return id_;
