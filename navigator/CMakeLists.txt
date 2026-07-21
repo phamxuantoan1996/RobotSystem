@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.14)
 add_library(navigator_lib 
     domain/value_objects/station.cpp
     domain/value_objects/location.cpp
+    domain/value_objects/velocity.cpp
 )
 
 # Chỉ đường dẫn để khi code bên ngoài #include "station.hpp" trình biên dịch tự tìm được
