@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.14)
 # Gom mã nguồn của phân hệ navigator thành một thư viện (Library)
 add_library(navigator_lib 
     domain/value_objects/station.cpp
+    domain/value_objects/location.cpp
 )
 
 # Chỉ đường dẫn để khi code bên ngoài #include "station.hpp" trình biên dịch tự tìm được
