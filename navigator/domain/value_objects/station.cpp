@@ -10,6 +10,12 @@ namespace navigator::domain::value_objects {
             throw std::invalid_argument("Error: Station name '" + id + "' is invalid!");
         }
     }
+
+    Station::Station(const Station& other):id_(other.id_)
+    {
+
+    }
+
     std::string Station::getId() const
     {
         return id_;
