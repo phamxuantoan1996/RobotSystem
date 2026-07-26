@@ -5,12 +5,13 @@ add_executable(navigator_tests
     station_test.cpp
     location_test.cpp
     velocity_test.cpp
+    SeerNavigatorFrameCodec_test.cpp
 )
 
 # Đảm bảo file test tìm thấy file header .hpp của class Station
 target_include_directories(navigator_tests PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/../domain/value_objects
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../drivers/seer
 )
 
 # Link file test với Google Test và thư viện code tính năng vừa tạo ở trên
