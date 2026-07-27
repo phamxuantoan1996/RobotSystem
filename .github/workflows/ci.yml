@@ -23,7 +23,9 @@ jobs:
             cmake \
             build-essential \
             wget \
-            unzip
+            unzip \
+            libjsoncpp-dev \
+            pkg-config
       
       # 3. Configure CMake (FetchContent sẽ tự tải GTest)
       - name: Configure CMake
