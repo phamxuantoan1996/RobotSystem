@@ -34,7 +34,7 @@ namespace navigator::domain::entities {
         Suspended,
         Completed,
         Failed,
-        Cancelled
+        Canceled
     };
 
     struct NavigatorPose {
