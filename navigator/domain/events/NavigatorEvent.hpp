@@ -34,6 +34,7 @@ namespace navigator::domain::events {
 
     // Control events
     struct NavigatorTaskCanceledEvent {};
+    struct NavigatorTaskStartedEvent {};
     struct NavigatorTaskPausedEvent {};
     struct NavigatorTaskResumedEvent {};
     struct NavigatorTaskSetFailedEvent {};
@@ -57,7 +58,8 @@ namespace navigator::domain::events {
         NavigatorTaskSetFailedEvent,
         NavigatorTaskClearFailedEvent,
         NavigatorTaskResumedEvent,
-        NavigatorRelocationConfirmEvent
+        NavigatorRelocationConfirmEvent,
+        NavigatorTaskStartedEvent
     >;
 
 
