@@ -18,25 +18,27 @@ namespace navigator::domain::events {
 
     // Exception events
     struct NavigatorSetErrorEvent {
-        int code;
+        std::string code;
         std::string desc;
     };
     struct NavigatorClearErrorEvent {
-        int code;
+        std::string code;
     };
     struct NavigatorSetFatalEvent {
-        int code;
+        std::string code;
         std::string desc;
     };
     struct NavigatorClearFatalEvent {
-        int code;
+        std::string code;
     };
 
     // Control events
-    struct NavigatorCanceledEvent {};
-    struct NavigatorPausedEvent {};
-    struct NavigatorResumedEvent {};
-    struct NavigatorRelocationEvent {};
+    struct NavigatorTaskCanceledEvent {};
+    struct NavigatorTaskPausedEvent {};
+    struct NavigatorTaskResumedEvent {};
+    struct NavigatorTaskSetFailedEvent {};
+    struct NavigatorTaskClearFailedEvent {};
+    struct NavigatorRelocationConfirmEvent {};
 
     using NavigatorEvent = std::variant<
         NavigatorDisconnectEvent,
@@ -50,9 +52,12 @@ namespace navigator::domain::events {
         NavigatorClearErrorEvent,
         NavigatorSetFatalEvent,
         NavigatorClearFatalEvent,
-        NavigatorCanceledEvent,
-        NavigatorPausedEvent,
-        NavigatorResumedEvent
+        NavigatorTaskCanceledEvent,
+        NavigatorTaskPausedEvent,
+        NavigatorTaskSetFailedEvent,
+        NavigatorTaskClearFailedEvent,
+        NavigatorTaskResumedEvent,
+        NavigatorRelocationConfirmEvent
     >;
 
 
