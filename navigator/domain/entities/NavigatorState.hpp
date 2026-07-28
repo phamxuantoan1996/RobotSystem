@@ -88,8 +88,8 @@ namespace navigator::domain::entities {
         bool emergency = false;
         std::string currentMap;
 
-        std::unordered_map<int,std::string> errors;
-        std::unordered_map<int,std::string> fatals;
+        std::unordered_map<std::string,std::string> errors; // {"error_code":"desc_error"}
+        std::unordered_map<std::string,std::string> fatals; // {"fatal_code":"desc_fatal"}
 
         std::string state_raw;
     };
