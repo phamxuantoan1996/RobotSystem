@@ -54,8 +54,8 @@ namespace navigator::drivers::seer {
         bool driver_emc = false;
         
         // errors, fatals
-        std::unordered_map<int,std::string> errors;
-        std::unordered_map<int,std::string> fatals;
+        std::unordered_map<std::string,std::string> errors;
+        std::unordered_map<std::string,std::string> fatals;
 
         // current map
         std::string current_map;
