@@ -11,6 +11,7 @@ add_executable(navigator_tests
     velocity_test.cpp
     SeerNavigatorFrameCodec_test.cpp
     SeerNavigatorBuilderCommand_test.cpp
+    SeerNavigatorStateMapper_test.cpp
 )
 
 # Đảm bảo file test tìm thấy file header .hpp của class Station

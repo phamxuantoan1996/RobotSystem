@@ -7,6 +7,7 @@ add_library(navigator_lib
     domain/value_objects/velocity.cpp
     drivers/seer/SeerNavigatorFrameCodec.cpp
     drivers/seer/SeerNavigatorCommandBuilder.cpp
+    drivers/seer/SeerNavigatorStateMapper.cpp
 )
 
 # Chỉ đường dẫn để khi code bên ngoài #include "station.hpp" trình biên dịch tự tìm được
