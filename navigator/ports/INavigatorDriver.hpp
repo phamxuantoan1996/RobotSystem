@@ -1,10 +1,10 @@
 #include <string>
 #include <system_error>
 #include <functional>
-#include "navigator/domain/entities/NavigatorState.hpp"
-#include "navigator/domain/events/NavigatorEvent.hpp"
-#include "navigator/domain/value_objects/location.hpp"
-#include "navigator/domain/value_objects/station.hpp"
+#include "NavigatorState.hpp"
+#include "NavigatorEvent.hpp"
+#include "location.hpp"
+#include "station.hpp"
 
 namespace navigator::ports {
     class INavigatorDriver {
@@ -25,7 +25,7 @@ namespace navigator::ports {
             virtual std::error_code relocation(navigator::domain::value_objects::Location location,navigator::domain::entities::NavigatorCoordinate coordinate,navigator::domain::entities::NavigatorBackMode back_mode) = 0;
             virtual std::error_code confirmRelocation() = 0;
 
-            navigator::domain::entities::NavigatorState getState();
+            virtual navigator::domain::entities::NavigatorState getState() const;
 
             using NavigatorEventCallback = std::function<void(const navigator::domain::events::NavigatorEvent& event)>;
             virtual void setNavigatorEventCallback(NavigatorEventCallback cb);
