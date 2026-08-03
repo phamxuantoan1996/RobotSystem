@@ -16,7 +16,7 @@ namespace navigator::ports {
             virtual bool isConnected() const = 0;
 
             virtual std::error_code goToStation(navigator::domain::value_objects::Station station) = 0;
-            virtual std::error_code goToPoint(navigator::domain::value_objects::Location location) = 0;
+            virtual std::error_code goToPoint(navigator::domain::value_objects::Location location,domain::entities::NavigatorBackMode backMode, domain::entities::NavigatorCoordinate navigatorCoordinate) = 0;
 
             virtual std::error_code cancelNavigation() = 0;
             virtual std::error_code pauseNavigation() = 0;
