@@ -122,12 +122,14 @@ namespace navigator::drivers::seer {
         expectTargetId_ = targetId;
     }
 
-    void SeerNavigatorStateMapper::setGoToPointTarget(double x, double y, double theta)
+    void SeerNavigatorStateMapper::setGoToPointTarget(double x, double y, double theta,domain::entities::NavigatorPose pose0, domain::entities::NavigatorCoordinate coordinate)
     {
         goToPointTarget_ = GoToPointTarget{
             .x     = x,
             .y     = y,
             .theta = theta,
+            .pose0 = pose0,
+            .coordinate = coordinate,
             .valid = true
         };
         // Reset GoToStation target
@@ -163,6 +165,7 @@ namespace navigator::drivers::seer {
         const navigator::domain::entities::NavigatorState& next,
         const std::string& activeTaskId) const
     {
+        // std::cout << "detect\n";
         // Reset khi task mới bắt đầu Running
         if (next.taskStatus == navigator::domain::entities::NavigatorTaskState::Running)
             arrivedStamp_ = false;
@@ -185,20 +188,39 @@ namespace navigator::drivers::seer {
             return std::nullopt;
 
         // ── GoToPoint — check bằng tọa độ ────────────────────────────────────────
-        if (goToPointTarget_.valid) {
-            double dx   = next.pose.x - goToPointTarget_.x;
-            double dy   = next.pose.y - goToPointTarget_.y;
-            double dist = std::sqrt(dx*dx + dy*dy);
-            double da   = angleDiff(next.pose.angle, goToPointTarget_.theta);
+        if (goToPointTarget_.valid) 
+        {
+            if(goToPointTarget_.coordinate == domain::entities::NavigatorCoordinate::WORLD)
+            {
+                double dx   = next.pose.x - goToPointTarget_.x;
+                double dy   = next.pose.y - goToPointTarget_.y;
+                double dist = std::sqrt(dx*dx + dy*dy);
+                double da   = angleDiff(next.pose.angle, goToPointTarget_.theta);
 
-            // std::cout << "dx : " << dx << "\tdy : " << dy << "\tda : " << (da *180)/3.14 << std::endl; 
-            if (dist*1000 > POSITION_TOLERANCE_MM || da > ANGLE_TOLERANCE_RAD)
-                return std::nullopt;  // chưa đến đúng vị trí — tiếp tục chờ
-            std::cout << "dist : " << dist << std::endl;
-            std::cout << "da : " << da << std::endl;
-            arrivedStamp_ = false;
-            clearGoToPointTarget();
-            return navigator::domain::events::NavigatorArrivedEvent{};
+                // std::cout << "dx : " << dx << "\tdy : " << dy << "\tdist : " << dist << "\tda : " << (da *180)/3.14 << std::endl; 
+                if (dist*1000 > POSITION_TOLERANCE_MM || da > ANGLE_TOLERANCE_RAD)
+                    return std::nullopt;  // chưa đến đúng vị trí — tiếp tục chờ
+                std::cout << "dist : " << dist << std::endl;
+                std::cout << "da : " << da << std::endl;
+                arrivedStamp_ = false;
+                clearGoToPointTarget();
+                return navigator::domain::events::NavigatorArrivedEvent{};
+            }
+            else if (goToPointTarget_.coordinate == domain::entities::NavigatorCoordinate::SELF) {
+                double dx   = (next.pose.x - goToPointTarget_.pose0.x) - goToPointTarget_.x;
+                double dy   = (next.pose.y - goToPointTarget_.pose0.y) - goToPointTarget_.y;
+                double dist = std::sqrt(dx*dx + dy*dy);
+                double da   = angleDiff(next.pose.angle - goToPointTarget_.pose0.angle, goToPointTarget_.theta);
+
+                if (dist*1000 > POSITION_TOLERANCE_MM || da > ANGLE_TOLERANCE_RAD)
+                    return std::nullopt;  // chưa đến đúng vị trí — tiếp tục chờ
+                std::cout << "dist : " << dist << std::endl;
+                std::cout << "da : " << da << std::endl;
+                arrivedStamp_ = false;
+                clearGoToPointTarget();
+                return navigator::domain::events::NavigatorArrivedEvent{};
+            }
+            
         }
 
         // ── GoToStation — check bằng currentStation ───────────────────────────────
@@ -418,6 +440,7 @@ namespace navigator::drivers::seer {
 
         if (auto e = checkTaskStarted(prev, next))
             events.push_back(std::move(*e));
+        
         if (!activeTaskId.empty()) {
             if (auto e = checkTaskArrived(prev, next, activeTaskId))
             {

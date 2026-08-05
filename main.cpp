@@ -1,31 +1,86 @@
+// #include <iostream>
+// #include "navigator/domain/value_objects/station.hpp"
+
+// int main(int argc, char *argv[])
+// {
+//     try 
+//     {
+//         navigator::domain::value_objects::Station station1("LM123");
+//         std::cout << "Station Id : " << station1.getId() << std::endl;
+
+//         navigator::domain::value_objects::Station station2(station1);
+//         std::cout << "Station Id : " << station2.getId() << std::endl;
+
+//         navigator::domain::value_objects::Station station3("LM12");
+
+//         if(station1 == station3)
+//         {
+//             std::cout << "match\n";
+//         }
+//         else {
+//             std::cout << "don't match\n";
+//         }
+//     } 
+//     catch (const std::invalid_argument& e) 
+//     {
+//         // Nếu constructor quăng ra lỗi, code sẽ nhảy ngay lập tức vào đây
+//         std::cerr << e.what() << "\n";
+//         return 1;
+//     }
+
+//     return 0;
+// }
+#include "NavigatorController.cpp"
+#include "navigator/drivers/seer/SeerNavigatorDriverReal.hpp"
+#include "station.hpp"
+#include <csignal>
 #include <iostream>
-#include "navigator/domain/value_objects/station.hpp"
+#include <memory>
 
-int main(int argc, char *argv[])
+std::atomic<bool> running{true};
+void signalHandler(int signum) {
+    std::cout << "\nTerminate program...\n" << std::endl;
+    running = false;
+}
+
+int main(int argc,char *argv[])
 {
-    try 
+    signal(SIGINT, signalHandler);
+    signal(SIGTERM, signalHandler);
+    auto seerDriver = std::make_unique<navigator::drivers::seer::SeerNavigatorDriverReal>(navigator::drivers::seer::SeerNavigatorDriverConfigParams{
+        .host = "192.168.192.5",
+        .timeout = 3000,
+        .pollStatusIntervals = 100
+    });
+
+    auto ec = seerDriver->connect();
+    if(ec)
     {
-        navigator::domain::value_objects::Station station1("LM123");
-        std::cout << "Station Id : " << station1.getId() << std::endl;
-
-        navigator::domain::value_objects::Station station2(station1);
-        std::cout << "Station Id : " << station2.getId() << std::endl;
-
-        navigator::domain::value_objects::Station station3("LM12");
-
-        if(station1 == station3)
-        {
-            std::cout << "match\n";
-        }
-        else {
-            std::cout << "don't match\n";
-        }
-    } 
-    catch (const std::invalid_argument& e) 
-    {
-        // Nếu constructor quăng ra lỗi, code sẽ nhảy ngay lập tức vào đây
-        std::cerr << e.what() << "\n";
+        std::cerr << "Can't connect to SEER driver!\n";
         return 1;
+    }
+
+    std::cout << "Connected to SEER driver!\n";
+    // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+    auto navigatorController = std::make_shared<navigator::application::adapter::NavigatorController>(std::move(seerDriver));
+    ec = navigatorController->connect();
+    if(ec)
+    {
+        std::cerr << "Can't intilize Navigator controller!";
+        return 1;
+    }
+    std::cout << "Navigator controller initlized!\n";
+
+
+    // navigatorController->goToStation(navigator::domain::value_objects::Station("LM1"));
+    navigatorController->goToPoint(
+        navigator::domain::value_objects::Location(0,0,-0.785), 
+        navigator::domain::entities::NavigatorBackMode::Forward, 
+        navigator::domain::entities::NavigatorCoordinate::SELF);
+
+    while (running) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     return 0;

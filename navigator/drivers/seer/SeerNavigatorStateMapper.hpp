@@ -32,17 +32,19 @@ namespace navigator::drivers::seer {
 
             void setExpectTargetId(std::string taskID, std::string targetID);
 
-            void setGoToPointTarget(double x,double y, double theta);
+            void setGoToPointTarget(double x,double y, double theta, domain::entities::NavigatorPose pose0, domain::entities::NavigatorCoordinate coordinate);
             void clearGoToPointTarget() const;
 
         private:
-            static constexpr double POSITION_TOLERANCE_MM = 50.0; // 10 cm
+            static constexpr double POSITION_TOLERANCE_MM = 10.0; // 1 cm
             static constexpr double ANGLE_TOLERANCE_RAD   = 0.0873; // 5 degree
 
             struct GoToPointTarget{
                 double x = 0;
                 double y = 0;
                 double theta = 0;
+                domain::entities::NavigatorPose pose0; // toa do luc gui len goToPoint. Chi dung cho che do self
+                domain::entities::NavigatorCoordinate coordinate;
                 bool valid = false;
             };
 
