@@ -1,6 +1,6 @@
 #pragma once
 #include "INavigatorDriver.hpp"
-#include "ISeerNavigationConnection.hpp"
+#include "ISeerNavigatorConnection.hpp"
 #include "NavigatorState.hpp"
 #include "SeerNavigatorCommandBuilder.hpp"
 #include "SeerNavigatorFrameCodec.hpp"
