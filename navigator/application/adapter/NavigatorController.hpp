@@ -1,3 +1,4 @@
+#pragma once
 #include "INavigatorDriver.hpp"
 #include "../common/application/EventBus.hpp"
 #include "../common/ports/IEventBus.hpp"
