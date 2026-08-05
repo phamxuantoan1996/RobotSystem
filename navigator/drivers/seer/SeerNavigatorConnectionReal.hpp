@@ -1,5 +1,5 @@
 #pragma once
-#include "ISeerNavigationConnection.hpp"
+#include "ISeerNavigatorConnection.hpp"
 #include "SeerNavigatorFrameCodec.hpp"
 #include <atomic>
 #include <cstdint>
