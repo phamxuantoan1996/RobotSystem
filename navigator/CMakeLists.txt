@@ -15,6 +15,7 @@ add_library(navigator_lib
     drivers/seer/SeerNavigatorDriverReal.cpp
     application/adapter/NavigatorController.cpp
     application/services/NavigatorReconnectService.cpp
+    application/use_cases/GoToStationStep.cpp
 )
 
 # LIÊN KẾT ĐẾN COMMON:
@@ -30,6 +31,7 @@ target_include_directories(navigator_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/doma
 target_include_directories(navigator_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ports)
 target_include_directories(navigator_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/application/adapter)
 target_include_directories(navigator_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/application/services)
+target_include_directories(navigator_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/application/use_cases)
 
 # Nếu chế độ test được bật, đi sâu tiếp vào thư mục test của phân hệ này
 if(BUILD_TESTING)
