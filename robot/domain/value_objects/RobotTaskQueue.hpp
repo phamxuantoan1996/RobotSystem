@@ -15,6 +15,6 @@ namespace robot::domain::value_objects {
             std::size_t size();
         private:
             std::queue<robot::domain::entities::RobotTask> queue_;
-            std::mutex mutexQueue_;
+            // std::mutex mutexQueue_;
     };
 }
