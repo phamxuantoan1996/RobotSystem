@@ -30,12 +30,70 @@
 
 //     return 0;
 // }
-#include "NavigatorController.cpp"
-#include "navigator/drivers/seer/SeerNavigatorDriverReal.hpp"
-#include "station.hpp"
+
+
+// #include "NavigatorController.cpp"
+// #include "navigator/drivers/seer/SeerNavigatorDriverReal.hpp"
+// #include "station.hpp"
+// #include <csignal>
+// #include <iostream>
+// #include <memory>
+
+// std::atomic<bool> running{true};
+// void signalHandler(int signum) {
+//     std::cout << "\nTerminate program...\n" << std::endl;
+//     running = false;
+// }
+
+// int main(int argc,char *argv[])
+// {
+//     signal(SIGINT, signalHandler);
+//     signal(SIGTERM, signalHandler);
+//     auto seerDriver = std::make_unique<navigator::drivers::seer::SeerNavigatorDriverReal>(navigator::drivers::seer::SeerNavigatorDriverConfigParams{
+//         .host = "127.0.0.1",
+//         .timeout = 3000,
+//         .pollStatusIntervals = 100
+//     });
+
+//     auto ec = seerDriver->connect();
+//     if(ec)
+//     {
+//         std::cerr << "Can't connect to SEER driver!\n";
+//         return 1;
+//     }
+
+//     std::cout << "Connected to SEER driver!\n";
+//     // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+//     auto navigatorController = std::make_shared<navigator::application::adapter::NavigatorController>(std::move(seerDriver));
+//     ec = navigatorController->connect();
+//     if(ec)
+//     {
+//         std::cerr << "Can't intilize Navigator controller!";
+//         return 1;
+//     }
+//     std::cout << "Navigator controller initlized!\n";
+
+
+//     navigatorController->goToStation(navigator::domain::value_objects::Station("LM16"));
+//     // navigatorController->goToPoint(
+//     //     navigator::domain::value_objects::Location(0,0,-0.785), 
+//     //     navigator::domain::entities::NavigatorBackMode::Forward, 
+//     //     navigator::domain::entities::NavigatorCoordinate::SELF);
+
+//     while (running) {
+//         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+//     }
+
+//     return 0;
+// }
+
 #include <csignal>
 #include <iostream>
 #include <memory>
+#include <utility>
+#include "gateway/drivers/rest/RestGateway.hpp"
+#include "gateway/application/adapter/GatewayController.hpp"
 
 std::atomic<bool> running{true};
 void signalHandler(int signum) {
@@ -47,41 +105,17 @@ int main(int argc,char *argv[])
 {
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
-    auto seerDriver = std::make_unique<navigator::drivers::seer::SeerNavigatorDriverReal>(navigator::drivers::seer::SeerNavigatorDriverConfigParams{
-        .host = "192.168.192.5",
-        .timeout = 3000,
-        .pollStatusIntervals = 100
-    });
 
-    auto ec = seerDriver->connect();
-    if(ec)
+    auto gatewayDriver = std::make_unique<gateway::drivers::rest::RestGateway>("http://127.0.0.1:8080",3000);
+    
+
+    auto gatewayController = std::make_shared<gateway::application::adapter::GatewayController>(std::move(gatewayDriver));
+    gatewayController->start();
+
+    while (running) 
     {
-        std::cerr << "Can't connect to SEER driver!\n";
-        return 1;
-    }
-
-    std::cout << "Connected to SEER driver!\n";
-    // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-
-    auto navigatorController = std::make_shared<navigator::application::adapter::NavigatorController>(std::move(seerDriver));
-    ec = navigatorController->connect();
-    if(ec)
-    {
-        std::cerr << "Can't intilize Navigator controller!";
-        return 1;
-    }
-    std::cout << "Navigator controller initlized!\n";
-
-
-    // navigatorController->goToStation(navigator::domain::value_objects::Station("LM1"));
-    navigatorController->goToPoint(
-        navigator::domain::value_objects::Location(0,0,-0.785), 
-        navigator::domain::entities::NavigatorBackMode::Forward, 
-        navigator::domain::entities::NavigatorCoordinate::SELF);
-
-    while (running) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
-
+    std::cout << "exit\n";
     return 0;
 }
