@@ -42,7 +42,7 @@ jobs:
       - name: Build and Install Drogon Framework
         if: steps.cache-drogon.outputs.cache-hit != 'true'
         run: |
-          git clone https://github.com
+          git clone https://github.com/drogonframework/drogon
           cd drogon
           git submodule update --init
           mkdir build && cd build
