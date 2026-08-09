@@ -1,6 +1,7 @@
 #pragma once
 #include "../gateway/ports/IRobotGateway.hpp"
 #include "../gateway/domain/entities/Network.hpp"
+#include "../gateway/domain/entities/SignalType.hpp"
 #include <atomic>
 #include <cstdint>
 #include <string>
@@ -25,11 +26,18 @@ namespace gateway::drivers::rest {
 
             // stop
             void stop() override;
+
+            void setGatewayEventCallback(GatewayEventCallback cb) override;
+
         private:
             std::string fleetUrl_;
             uint16_t port_;
             std::atomic<bool> running_{false};
             std::thread drogonThread_;
+            GatewayEventCallback eventCallback_;
+            
+            std::atomic<gateway::domain::entities::CollisionSignalType> signal_type{gateway::domain::entities::CollisionSignalType::Exception};
+            std::atomic<gateway::domain::entities::TransferSignalType> transfer_type{gateway::domain::entities::TransferSignalType::Unknown};
 
             void drogonServerThread();
     };
