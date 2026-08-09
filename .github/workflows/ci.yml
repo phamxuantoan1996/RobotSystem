@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # 2. Cài đặt dependencies (CMake sẽ tự tải GTest)
+      # 2. Cài đặt dependencies (Bổ sung thư viện bắt buộc cho Drogon)
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -25,27 +25,47 @@ jobs:
             wget \
             unzip \
             libjsoncpp-dev \
-            pkg-config
+            pkg-config \
+            uuid-dev \
+            zlib1g-dev \
+            libssl-dev
       
-      # 3. Configure CMake (FetchContent sẽ tự tải GTest)
+      # 3. Sử dụng Cache để tránh biên dịch lại Drogon ở mỗi lần chạy CI
+      - name: Cache Drogon Framework
+        id: cache-drogon
+        uses: actions/cache@v4
+        with:
+          path: ~/drogon_install
+          key: ${{ runner.os }}-drogon-cache-v1
+
+      # 4. Tải và cài đặt Drogon nếu chưa có trong Cache
+      - name: Build and Install Drogon Framework
+        if: steps.cache-drogon.outputs.cache-hit != 'true'
+        run: |
+          git clone https://github.com
+          cd drogon
+          git submodule update --init
+          mkdir build && cd build
+          cmake -DCMAKE_INSTALL_PREFIX=$HOME/drogon_install -DCMAKE_BUILD_TYPE=Release ..
+          make -j$(nproc)
+          make install
+
+      # 5. Configure CMake (Truyền đường dẫn Drogon vào CMAKE_PREFIX_PATH)
       - name: Configure CMake
         run: |
-          mkdir -p build
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Debug
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=$HOME/drogon_install
       
-      # 4. Build project
+      # 6. Build project
       - name: Build project
         run: |
-          cd build
-          make -j$(nproc)
+          cmake --build build --config Debug -j$(nproc)
       
-      # 5. Chạy unit tests (CTest sẽ chạy tất cả test đã đăng ký)
+      # 7. Chạy unit tests
       - name: Run tests
         working-directory: build
         run: ctest --output-on-failure --verbose
       
-      # 6. Upload test logs nếu fail
+      # 8. Upload test logs nếu fail
       - name: Upload test logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
