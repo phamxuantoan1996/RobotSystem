@@ -1,5 +1,7 @@
 #pragma once
 #include "../gateway/domain/entities/Network.hpp"
+#include "../gateway/domain/events/GatewayEvent.hpp"
+#include <functional>
 #include <string>
 namespace gateway::ports {
     class IRobotGateway {
@@ -20,5 +22,8 @@ namespace gateway::ports {
 
             // stop
             virtual void stop() = 0;
+
+            using GatewayEventCallback = std::function<void(const gateway::domain::events::GatewayEvent& event)>;
+            virtual void setGatewayEventCallback(GatewayEventCallback cb) = 0;
     };
 }
