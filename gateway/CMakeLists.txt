@@ -11,6 +11,7 @@ find_package(Drogon REQUIRED)
 
 add_library(gateway_lib
     drivers/rest/RestGateway.cpp
+    application/adapter/GatewayController.cpp
 )
 
 target_link_libraries(gateway_lib 
@@ -22,3 +23,4 @@ target_include_directories(gateway_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/domain
 target_include_directories(gateway_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/domain/entities)
 target_include_directories(gateway_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ports)
 target_include_directories(gateway_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/drivers/rest)
+target_include_directories(gateway_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/application/adapter)
