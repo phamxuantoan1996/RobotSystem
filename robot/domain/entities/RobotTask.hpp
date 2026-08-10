@@ -1,4 +1,5 @@
 #pragma once
+#include "RobotStatus.hpp"
 #include "ports/IRobotStep.hpp"
 #include <memory>
 #include <string>
@@ -13,6 +14,7 @@ namespace robot::domain::entities {
     };
     struct RobotTask {
         std::string mission_id;
+        domain::entities::RobotOperationMode activity_type;
         std::vector<std::unique_ptr<common::ports::IRobotStep>> steps;
     };
 }
