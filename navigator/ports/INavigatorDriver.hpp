@@ -1,10 +1,10 @@
 #pragma once
 #include <system_error>
 #include <functional>
-#include "NavigatorState.hpp"
-#include "NavigatorEvent.hpp"
-#include "location.hpp"
-#include "station.hpp"
+#include "../navigator/domain/entities/NavigatorState.hpp"
+#include "../navigator/domain/events/NavigatorEvent.hpp"
+#include "../navigator/domain/value_objects/location.hpp"
+#include "../navigator/domain/value_objects/station.hpp"
 
 namespace navigator::ports {
     class INavigatorDriver {

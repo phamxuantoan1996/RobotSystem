@@ -1,12 +1,11 @@
 #pragma once
-#include "INavigatorDriver.hpp"
+#include "../navigator/ports/INavigatorDriver.hpp"
 #include "../common/application/EventBus.hpp"
 #include "../common/ports/IEventBus.hpp"
-#include "NavigatorEvent.hpp"
-#include "NavigatorReconnectService.hpp"
-#include "NavigatorState.hpp"
-#include "station.hpp"
-// #include "navigation/application/services/ReconnectService.h"
+#include "../navigator/domain/events/NavigatorEvent.hpp"
+#include "../navigator/application/services/NavigatorReconnectService.hpp"
+#include "../navigator/domain/entities/NavigatorState.hpp"
+#include "../navigator/domain/value_objects/station.hpp"
 
 #include <functional>
 #include <memory>

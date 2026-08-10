@@ -5,7 +5,7 @@
 #include <future>
 
 namespace navigator::application::use_cases {
-    GoToStationStep::GoToStationStep(std::shared_ptr<navigator::application::adapter::NavigatorController> controller,std::string station) 
+    GoToStationStep::GoToStationStep(std::shared_ptr<navigator::application::adapter::NavigatorController> controller,domain::value_objects::Station station) 
     : controller_(controller)
     ,station_(station)
     {
@@ -44,7 +44,7 @@ namespace navigator::application::use_cases {
                 }
             },event);
         });
-        auto ec = controller_->goToStation(domain::value_objects::Station(station_));
+        auto ec = controller_->goToStation(station_);
         if(ec)
         {
             return common::ports::GotoStationStepResult{.result = common::ports::GotoStationStepResult::Result::Failed};
