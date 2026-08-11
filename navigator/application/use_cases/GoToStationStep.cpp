@@ -5,11 +5,12 @@
 #include <future>
 
 namespace navigator::application::use_cases {
-    GoToStationStep::GoToStationStep(std::shared_ptr<navigator::application::adapter::NavigatorController> controller,domain::value_objects::Station station) 
-    : controller_(controller)
+    GoToStationStep::GoToStationStep(std::shared_ptr<navigator::application::adapter::NavigatorController> controller,const domain::value_objects::Station& station,int actionIndex) 
+    : common::ports::IRobotStep(actionIndex), 
+    controller_(controller)
     ,station_(station)
     {
-
+        // actionIndex_ = actionIndex;
     }
     common::ports::RobotStepResult GoToStationStep::excute(common::ports::RobotStepResult prevResult)
     {
@@ -52,5 +53,9 @@ namespace navigator::application::use_cases {
         auto result = future.get();
         controller_->unSubcribeEvents(handleId);
         return result;
+    }
+    int GoToStationStep::getActionIndex()
+    {
+        return actionIndex_;
     }
 }
