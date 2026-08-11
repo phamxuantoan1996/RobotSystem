@@ -2,7 +2,7 @@
 
 #include <string>
 #include <variant>
-#include "../domain/entities/SignalType.hpp"
+#include "../gateway/domain/entities/SignalType.hpp"
 namespace gateway::domain::events {
     struct MissionDispatchEvent {
         std::string mission;
