@@ -94,6 +94,9 @@
 #include <utility>
 #include "gateway/drivers/rest/RestGateway.hpp"
 #include "gateway/application/adapter/GatewayController.hpp"
+#include "navigator/drivers/seer/SeerNavigatorDriverReal.hpp"
+#include "navigator/application/adapter/NavigatorController.hpp"
+#include "robot/application/controller/RobotController.hpp"
 
 std::atomic<bool> running{true};
 void signalHandler(int signum) {
@@ -106,16 +109,37 @@ int main(int argc,char *argv[])
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
 
-    auto gatewayDriver = std::make_unique<gateway::drivers::rest::RestGateway>("http://127.0.0.1:8080",3000);
-    
-
-    auto gatewayController = std::make_shared<gateway::application::adapter::GatewayController>(std::move(gatewayDriver));
+    auto gatewayDriver = std::make_unique<gateway::drivers::rest::RestGateway>("http://127.0.0.1",3000);
+    auto gatewayController = std::make_unique<gateway::application::adapter::GatewayController>(std::move(gatewayDriver));
     gatewayController->start();
 
-    while (running) 
+    auto seerDriver = std::make_unique<navigator::drivers::seer::SeerNavigatorDriverReal>(navigator::drivers::seer::SeerNavigatorDriverConfigParams{
+        .host = "127.0.0.1",
+        .timeout = 3000,
+        .pollStatusIntervals = 100
+    });
+    auto ec = seerDriver->connect();
+    if(ec)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::cerr << "Can't connect to SEER driver!\n";
+        return 1;
     }
+    std::cout << "Connected to SEER driver!\n";
+    // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+    auto navigatorController = std::make_shared<navigator::application::adapter::NavigatorController>(std::move(seerDriver));
+    ec = navigatorController->connect();
+    if(ec)
+    {
+        std::cerr << "Can't intilize Navigator controller!";
+        return 1;
+    }
+    std::cout << "Navigator controller initlized!\n";
+
+
+    robot::application::RobotController robotController(navigatorController,std::move(gatewayController));
+    robotController.start();
+    
     std::cout << "exit\n";
     return 0;
 }
