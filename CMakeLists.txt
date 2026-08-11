@@ -51,7 +51,7 @@ add_subdirectory(gateway)
 add_executable(RobotSystemApp main.cpp)
 
 # 5. Link app chính với thư viện của phân hệ navigator để main.cpp gọi được class Station
-target_link_libraries(RobotSystemApp PRIVATE navigator_lib common_interface robot_lib gateway_lib)
+target_link_libraries(RobotSystemApp PRIVATE robot_lib navigator_lib common_interface gateway_lib)
 
 target_include_directories(RobotSystemApp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
