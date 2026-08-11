@@ -52,37 +52,6 @@ namespace gateway::application::adapter {
 
     void GatewayController::handleEvent(const gateway::domain::events::GatewayEvent& event)
     {
-        std::visit([](const auto& e) {
-            using T = std::decay_t<decltype(e)>;
-            if constexpr (std::is_same_v<T, domain::events::SignalCancelEvent>)
-            {     
-                std::cout << "signal cancel\n";
-            }
-            else if constexpr (std::is_same_v<T, domain::events::SignalPauseEvent>) {
-                std::cout << "signal pause\n";
-            }
-            else if constexpr (std::is_same_v<T, domain::events::SignalResumeEvent>) {
-                std::cout << "signal resume\n";
-            }
-            else if constexpr (std::is_same_v<T, domain::events::SignalClearErrorEvent>) {
-                std::cout << "signal clear error\n";
-            }
-            else if constexpr (std::is_same_v<T, domain::events::SignalSwitchModeEvent>) {
-                std::cout << "switch mode\n";
-            }
-            else if constexpr (std::is_same_v<T, domain::events::SignalCollisionEvent>) {
-                std::cout << "signal collision\n";
-            }
-            else if constexpr (std::is_same_v<T, domain::events::SignalTransferEvent>) {
-                std::cout << "signal transfer\n";
-            }
-            else if constexpr (std::is_same_v<T, domain::events::MissionDispatchEvent>) {
-                std::cout << "mission dispatch\n";
-            }
-            else if constexpr (std::is_same_v<T, domain::events::ControlManualEvent>) {
-                std::cout << "control manual\n";
-            }
-        },event);
         gatewayEventBus_->publish(event);
     }
 }
