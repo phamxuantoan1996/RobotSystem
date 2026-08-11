@@ -88,15 +88,73 @@
 //     return 0;
 // }
 
+// #include <csignal>
+// #include <iostream>
+// #include <memory>
+// #include <utility>
+// #include "gateway/drivers/rest/RestGateway.hpp"
+// #include "gateway/application/adapter/GatewayController.hpp"
+// #include "navigator/drivers/seer/SeerNavigatorDriverReal.hpp"
+// #include "navigator/application/adapter/NavigatorController.hpp"
+// #include "robot/application/controller/RobotController.hpp"
+
+// std::atomic<bool> running{true};
+// void signalHandler(int signum) {
+//     std::cout << "\nTerminate program...\n" << std::endl;
+//     running = false;
+// }
+
+// int main(int argc,char *argv[])
+// {
+//     signal(SIGINT, signalHandler);
+//     signal(SIGTERM, signalHandler);
+
+//     auto gatewayDriver = std::make_unique<gateway::drivers::rest::RestGateway>("http://127.0.0.1",3000);
+//     auto gatewayController = std::make_unique<gateway::application::adapter::GatewayController>(std::move(gatewayDriver));
+//     gatewayController->start();
+
+//     auto seerDriver = std::make_unique<navigator::drivers::seer::SeerNavigatorDriverReal>(navigator::drivers::seer::SeerNavigatorDriverConfigParams{
+//         .host = "127.0.0.1",
+//         .timeout = 3000,
+//         .pollStatusIntervals = 100
+//     });
+//     auto ec = seerDriver->connect();
+//     if(ec)
+//     {
+//         std::cerr << "Can't connect to SEER driver!\n";
+//         return 1;
+//     }
+//     std::cout << "Connected to SEER driver!\n";
+//     // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+//     auto navigatorController = std::make_shared<navigator::application::adapter::NavigatorController>(std::move(seerDriver));
+//     ec = navigatorController->connect();
+//     if(ec)
+//     {
+//         std::cerr << "Can't intilize Navigator controller!";
+//         return 1;
+//     }
+//     std::cout << "Navigator controller initlized!\n";
+
+
+//     robot::application::RobotController robotController(navigatorController,std::move(gatewayController));
+//     robotController.start();
+    
+//     std::cout << "exit\n";
+//     return 0;
+// }
+
+
 #include <csignal>
 #include <iostream>
+#include <atomic>
 #include <memory>
 #include <utility>
-#include "gateway/drivers/rest/RestGateway.hpp"
-#include "gateway/application/adapter/GatewayController.hpp"
-#include "navigator/drivers/seer/SeerNavigatorDriverReal.hpp"
-#include "navigator/application/adapter/NavigatorController.hpp"
-#include "robot/application/controller/RobotController.hpp"
+
+#include "../board/application/adapter/BoardController.hpp"
+#include "../board/ports/IBoardTransport.hpp"
+#include "../board/drivers/serial_transport/BoardSerialTransport.hpp"
+#include "../board/domain/value_objects/BoardCommandQueue.hpp"
 
 std::atomic<bool> running{true};
 void signalHandler(int signum) {
@@ -109,37 +167,25 @@ int main(int argc,char *argv[])
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
 
-    auto gatewayDriver = std::make_unique<gateway::drivers::rest::RestGateway>("http://127.0.0.1",3000);
-    auto gatewayController = std::make_unique<gateway::application::adapter::GatewayController>(std::move(gatewayDriver));
-    gatewayController->start();
+    board::drivers::serial_transport::SerialTransportConfig serialTransportConfig;
+    serialTransportConfig.serial_port = "/dev/ttyUSB0";
+    serialTransportConfig.baudrate = 115200;
+    serialTransportConfig.timeout = 3000;
+    auto boardDriver = std::make_unique<board::drivers::serial_transport::BoardSerialTransport>(std::move(serialTransportConfig));
+    auto boardCommandQueue = std::make_shared<board::domain::value_objects::BoardCommandQueue>();
+    auto boardController = std::make_shared<board_subsystem::adapter::BoardController>(std::move(boardDriver),boardCommandQueue,100);
 
-    auto seerDriver = std::make_unique<navigator::drivers::seer::SeerNavigatorDriverReal>(navigator::drivers::seer::SeerNavigatorDriverConfigParams{
-        .host = "127.0.0.1",
-        .timeout = 3000,
-        .pollStatusIntervals = 100
-    });
-    auto ec = seerDriver->connect();
+    auto ec = boardController->connect();
+
     if(ec)
     {
-        std::cerr << "Can't connect to SEER driver!\n";
+        std::cerr << "Board Controller Initlize Error\n";
         return 1;
     }
-    std::cout << "Connected to SEER driver!\n";
-    // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
-    auto navigatorController = std::make_shared<navigator::application::adapter::NavigatorController>(std::move(seerDriver));
-    ec = navigatorController->connect();
-    if(ec)
+    while(running)
     {
-        std::cerr << "Can't intilize Navigator controller!";
-        return 1;
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-    std::cout << "Navigator controller initlized!\n";
-
-
-    robot::application::RobotController robotController(navigatorController,std::move(gatewayController));
-    robotController.start();
-    
-    std::cout << "exit\n";
     return 0;
 }
