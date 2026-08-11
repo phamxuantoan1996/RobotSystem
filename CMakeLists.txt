@@ -45,13 +45,15 @@ add_subdirectory(robot)
 
 add_subdirectory(gateway)
 
+add_subdirectory(board)
+
 # (Sau này có thêm test cho robot, map... thì cũng add_subdirectory vào đây)
 
 # 4. App chính chạy file main.cpp của bro
 add_executable(RobotSystemApp main.cpp)
 
 # 5. Link app chính với thư viện của phân hệ navigator để main.cpp gọi được class Station
-target_link_libraries(RobotSystemApp PRIVATE robot_lib navigator_lib common_interface gateway_lib)
+target_link_libraries(RobotSystemApp PRIVATE robot_lib board_lib navigator_lib common_interface gateway_lib)
 
 target_include_directories(RobotSystemApp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
