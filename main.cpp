@@ -156,6 +156,11 @@
 #include "../board/drivers/serial_transport/BoardSerialTransport.hpp"
 #include "../board/domain/value_objects/BoardCommandQueue.hpp"
 
+#include "../lift/application/adapter/LiftController.hpp"
+#include "../lift/application/use_cases/LiftMoveStep.hpp"
+#include "LiftTarget.hpp"
+#include "ports/IRobotStep.hpp"
+
 std::atomic<bool> running{true};
 void signalHandler(int signum) {
     std::cout << "\nTerminate program...\n" << std::endl;
@@ -175,6 +180,11 @@ int main(int argc,char *argv[])
     auto boardCommandQueue = std::make_shared<board::domain::value_objects::BoardCommandQueue>();
     auto boardController = std::make_shared<board_subsystem::adapter::BoardController>(std::move(boardDriver),boardCommandQueue,100);
 
+
+    auto liftController = std::make_shared<lift::application::adapter::LiftController>(boardCommandQueue);
+    boardController->setCallbackUpdateState([liftController](const std::string& data) {
+        liftController->updateState(data);
+    });
     auto ec = boardController->connect();
 
     if(ec)
@@ -183,9 +193,16 @@ int main(int argc,char *argv[])
         return 1;
     }
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
     while(running)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        lift::application::use_cases::LiftMoveStep step1(liftController,lift::domain::value_objects::LiftTarget(0),0);
+        step1.excute(common::ports::UnknowStepResult{});
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+        lift::application::use_cases::LiftMoveStep step2(liftController,lift::domain::value_objects::LiftTarget(1),1);
+        step2.excute(common::ports::UnknowStepResult{});
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     }
     return 0;
 }
