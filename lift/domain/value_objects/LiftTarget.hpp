@@ -1,14 +1,15 @@
 #pragma once
+#include <cstdint>
 namespace lift::domain::value_objects {
     class LiftTarget {
         private:
             // Thuộc tính private và hằng số (const) để đảm bảo tính bất biến sau khi khởi tạo
-            const int target;
+            const uint16_t target;
 
             // Các quy tắc cấu hình nghiệp vụ (Business Domain Rules)
             // Bạn có thể thay đổi các giá trị min, max này tùy thuộc vào thiết kế hệ thống
-            static constexpr int MIN_TARGET = 1;
-            static constexpr int MAX_TARGET = 50;
+            static constexpr uint16_t MIN_TARGET = 0;
+            static constexpr uint16_t MAX_TARGET = 1;
 
         public:
             /**
@@ -16,7 +17,7 @@ namespace lift::domain::value_objects {
             * @param targetValue Giá trị tầng đích muốn gán.
             * @throws std::invalid_argument Nếu giá trị vượt quá khoảng giới hạn cho phép (min, max).
             */
-            explicit LiftTarget(int targetValue);
+            explicit LiftTarget(uint16_t targetValue);
 
             // Hàm huỷ mặc định
             ~LiftTarget() = default;
@@ -25,7 +26,7 @@ namespace lift::domain::value_objects {
             * @brief Hàm lấy giá trị target (Getter).
             * Được đánh dấu `const` để không làm thay đổi trạng thái của đối tượng.
             */
-            int getTarget() const;
+            uint16_t getTarget() const;
 
             /**
             * @brief Định nghĩa toán tử so sánh bằng (Value Equality).
