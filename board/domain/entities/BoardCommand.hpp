@@ -26,7 +26,7 @@ namespace board::domain::entities {
     };
 
     enum class IndicatorCommandType {
-        Unknown,
+        Unknown = -1,
         SetColor
     };
 
