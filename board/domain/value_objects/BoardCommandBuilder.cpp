@@ -1,6 +1,7 @@
 #include "BoardCommandBuilder.hpp"
 #include "../board/domain/entities/BoardCommand.hpp"
 #include <cstdint>
+#include <iostream>
 #include <jsoncpp/json/json.h>
 #include <jsoncpp/json/value.h>
 #include <optional>
@@ -14,7 +15,7 @@ namespace board::domain::value_objects {
         std::string command_str;
         Json::Value root;
 
-        root["type_id"] = 0;
+        root["command_type"] = 0;
         root["command_id"] = static_cast<uint8_t>(command.system_command_type);
 
         Json::StreamWriterBuilder builder;
@@ -28,7 +29,7 @@ namespace board::domain::value_objects {
     {
         std::string command_str;
         Json::Value root;
-        root["type_id"] = static_cast<uint8_t>(board::domain::entities::CommandType::Lift);
+        root["command_type"] = static_cast<uint8_t>(board::domain::entities::CommandType::Lift);
         root["command_id"] = static_cast<uint8_t>(command.lift_command_type);
         
         Json::Value params;
@@ -45,7 +46,7 @@ namespace board::domain::value_objects {
     {
         std::string command_str;
         Json::Value root;
-        root["type_id"] = static_cast<uint8_t>(board::domain::entities::CommandType::Indicator);
+        root["command_type"] = static_cast<uint8_t>(board::domain::entities::CommandType::Indicator);
         root["command_id"] = static_cast<uint8_t>(command.indicator_command_type);
         
         Json::Value params;
