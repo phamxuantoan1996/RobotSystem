@@ -5,8 +5,8 @@
 #include <future>
 
 namespace navigator::application::use_cases {
-    GoToStationStep::GoToStationStep(std::shared_ptr<navigator::application::adapter::NavigatorController> controller,const domain::value_objects::Station& station,int actionIndex) 
-    : common::ports::IRobotStep(actionIndex), 
+    GoToStationStep::GoToStationStep(std::shared_ptr<navigator::application::adapter::NavigatorController> controller,const domain::value_objects::Station& station,int action_index) 
+    : common::ports::IRobotStep(action_index), 
     controller_(controller)
     ,station_(station)
     {
