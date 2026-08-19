@@ -9,10 +9,19 @@ namespace common::ports {
         };
         Result result;
     };
+    struct LiftMoveStepResult {
+        enum class Result {
+            Success,
+            Failed,
+            Canceled
+        };
+        Result result;
+    };
     struct UnknowStepResult {};
     using RobotStepResult = std::variant<
         UnknowStepResult,
-        GotoStationStepResult
+        GotoStationStepResult,
+        LiftMoveStepResult
     >;
     class IRobotStep {
         public:
