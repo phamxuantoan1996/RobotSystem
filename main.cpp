@@ -159,6 +159,7 @@
 #include "../lift/application/adapter/LiftController.hpp"
 #include "../lift/application/use_cases/LiftMoveStep.hpp"
 #include "LiftTarget.hpp"
+#include "indicator/application/adapter/IndicatorController.hpp"
 #include "ports/IRobotStep.hpp"
 
 std::atomic<bool> running{true};
@@ -185,6 +186,9 @@ int main(int argc,char *argv[])
     boardController->setCallbackUpdateState([liftController](const std::string& data) {
         liftController->updateState(data);
     });
+
+    auto indicatorController = std::make_unique<indicator::application::adapter::IndicatorController>(boardCommandQueue);
+
     auto ec = boardController->connect();
 
     if(ec)
@@ -197,12 +201,16 @@ int main(int argc,char *argv[])
 
     while(running)
     {
-        lift::application::use_cases::LiftMoveStep step1(liftController,lift::domain::value_objects::LiftTarget(0),0);
-        step1.excute(common::ports::UnknowStepResult{});
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        lift::application::use_cases::LiftMoveStep step2(liftController,lift::domain::value_objects::LiftTarget(1),1);
-        step2.excute(common::ports::UnknowStepResult{});
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+        // lift::application::use_cases::LiftMoveStep step1(liftController,lift::domain::value_objects::LiftTarget(0),0);
+        // step1.excute(common::ports::UnknowStepResult{});
+        // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+        // lift::application::use_cases::LiftMoveStep step2(liftController,lift::domain::value_objects::LiftTarget(1),1);
+        // step2.excute(common::ports::UnknowStepResult{});
+        // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+        indicatorController->setColor(indicator::domain::entities::ColorType::GreenBlink);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        indicatorController->setColor(indicator::domain::entities::ColorType::Green);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     return 0;
 }
