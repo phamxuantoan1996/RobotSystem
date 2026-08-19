@@ -5,6 +5,7 @@
 
 namespace board::domain::entities {
     enum class CommandType {
+        Unknown = -1,
         System,
         Lift,
 
@@ -20,7 +21,7 @@ namespace board::domain::entities {
     };
 
     enum class LiftCommandType {
-        Unknown,
+        Unknown = -1,
         LiftMove
     };
 
