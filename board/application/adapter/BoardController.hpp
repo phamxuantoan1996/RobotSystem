@@ -14,7 +14,7 @@
 
 #define BOARD_POLL_STATE_TIMEOUT 3000 // ms
 
-namespace board_subsystem::adapter {
+namespace board::application::adapter {
     class BoardController {
         public:
             explicit BoardController(std::unique_ptr<board::ports::IBoardTransport> driver,std::shared_ptr<board::domain::value_objects::BoardCommandQueue> command_queue,uint32_t poll_interval_ms);

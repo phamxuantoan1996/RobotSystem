@@ -9,7 +9,7 @@
 #include <system_error>
 #include <thread>
 
-namespace board_subsystem::adapter {
+namespace board::application::adapter {
     BoardController::BoardController(std::unique_ptr<board::ports::IBoardTransport> driver,std::shared_ptr<board::domain::value_objects::BoardCommandQueue> command_queue,uint32_t poll_inter_val_ms)
     : driver_(std::move(driver)),
     commandQueue_(std::move(command_queue)),
