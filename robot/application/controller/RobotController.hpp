@@ -3,10 +3,10 @@
 #include "../gateway/application/adapter/GatewayController.hpp"
 #include "../common/ports/IEventBus.hpp"
 #include "../robot/domain/events/RobotEvent.hpp"
-#include "MissionParser.hpp"
-#include "Orchestrator.hpp"
-#include "RobotStatus.hpp"
-#include "RobotTask.hpp"
+#include "../robot/domain/value_objects/MissionParser.hpp"
+#include "../robot/application/orchestrator/Orchestrator.hpp"
+#include "../robot/domain/entities/RobotStatus.hpp"
+#include "../robot/domain/entities/RobotTask.hpp"
 #include <atomic>
 #include <memory>
 #include <mutex>
@@ -19,8 +19,8 @@ namespace robot::application {
 
             using RobotEventHandler = std::function<void(const robot::domain::events::RobotEvent&)>;
             using HandlerId = typename common::ports::IEventBus<robot::domain::events::RobotEvent>::HandlerID;
-            HandlerId subcribeEvents(RobotEventHandler handler);
-            void unSubcribeEvents(HandlerId id);
+            HandlerId subscribeEvents(RobotEventHandler handler);
+            void unSubscribeEvents(HandlerId id);
 
             void start();
             void stop();

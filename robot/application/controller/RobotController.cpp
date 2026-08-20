@@ -68,11 +68,11 @@ namespace robot::application {
         stop();
     }
 
-    RobotController::HandlerId RobotController::subcribeEvents(RobotController::RobotEventHandler handler)
+    RobotController::HandlerId RobotController::subscribeEvents(RobotController::RobotEventHandler handler)
     {
         return robotEventBus_->subscribe(std::move(handler));
     }
-    void RobotController::unSubcribeEvents(RobotController::HandlerId id)
+    void RobotController::unSubscribeEvents(RobotController::HandlerId id)
     {
         robotEventBus_->unsubscribe(id);
     }

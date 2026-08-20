@@ -1,6 +1,6 @@
 #pragma once
-#include "RobotStatus.hpp"
-#include "ports/IRobotStep.hpp"
+#include "../robot/domain/entities/RobotStatus.hpp"
+#include "../common/ports/IRobotStep.hpp"
 #include <memory>
 #include <string>
 #include <vector>

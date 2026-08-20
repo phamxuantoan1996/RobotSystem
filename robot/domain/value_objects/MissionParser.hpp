@@ -1,5 +1,5 @@
 #pragma once
-#include "RobotTask.hpp"
+#include "../robot/domain/entities/RobotTask.hpp"
 #include "../navigator/application/adapter/NavigatorController.hpp"
 #include <memory>
 #include <optional>
