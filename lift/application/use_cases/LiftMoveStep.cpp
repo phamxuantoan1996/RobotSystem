@@ -21,13 +21,13 @@ namespace lift::application::use_cases {
         auto handleId = liftController_->subscribeEvents([&promise,resolved](const lift::domain::events::LiftEvent& event){
             std::visit([&promise,&resolved](const auto& ev){
                 using T = std::decay_t<decltype(ev)>;
-                if constexpr (std::is_same_v<T, lift::domain::events::LiftTaskCompleteEvent>) 
+                if constexpr (std::is_same_v<T, lift::domain::events::LiftTaskCompletedEvent>) 
                 {
                     if (resolved->exchange(true)) 
                         return;
                     promise->set_value(common::ports::LiftMoveStepResult{.result = common::ports::LiftMoveStepResult::Result::Success});
                 }
-                if constexpr (std::is_same_v<T, lift::domain::events::LiftTaskCancelEvent>) 
+                else if constexpr (std::is_same_v<T, lift::domain::events::LiftTaskCanceledEvent>) 
                 {
                     if (resolved->exchange(true)) 
                         return;
@@ -47,5 +47,20 @@ namespace lift::application::use_cases {
     int LiftMoveStep::getActionIndex()
     {
         return actionIndex_;
+    }
+    
+    void LiftMoveStep::cancel()
+    {
+        liftController_->cancel();
+    }
+
+    void LiftMoveStep::pause()
+    {
+        liftController_->pause();
+    }
+
+    void LiftMoveStep::resume()
+    {
+        liftController_->resume();
     }
 }

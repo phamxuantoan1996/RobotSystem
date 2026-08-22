@@ -297,7 +297,7 @@ namespace navigator::drivers::seer {
     std::optional<navigator::domain::events::NavigatorEvent> SeerNavigatorStateMapper::checkTaskStarted(
             const PrevSnapshot& prev, const navigator::domain::entities::NavigatorState& next) const
     {
-        if(prev.taskState != navigator::domain::entities::NavigatorTaskState::Completed && next.taskStatus == navigator::domain::entities::NavigatorTaskState::Running)
+        if(prev.taskState != navigator::domain::entities::NavigatorTaskState::Running && next.taskStatus == navigator::domain::entities::NavigatorTaskState::Running)
         {
             return domain::events::NavigatorTaskStartedEvent{};
         }

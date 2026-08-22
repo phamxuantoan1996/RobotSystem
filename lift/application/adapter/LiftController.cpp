@@ -209,7 +209,7 @@ namespace lift::application::adapter {
             lift::domain::entities::LiftState prev;
             lift::domain::entities::LiftState next;
             {
-                std::lock_guard<std::mutex> lk(std::mutex);
+                std::lock_guard<std::mutex> lk(mutexState_);
                 prev = prevSnapshot_;
                 
                 if (root.isMember("machine_state") && root["machine_state"].isInt()) {
@@ -310,18 +310,17 @@ namespace lift::application::adapter {
         // conveyor mission event
         if (prev.task_status != lift::domain::entities::LiftTaskStatusCode::Running && next.task_status == lift::domain::entities::LiftTaskStatusCode::Running) 
         {
-            std::cout << "lift task running\n";
             liftEventBus_->publish(lift::domain::events::LiftTaskRunningEvent{});
         }
         else if (prev.task_status != lift::domain::entities::LiftTaskStatusCode::Completed && next.task_status == lift::domain::entities::LiftTaskStatusCode::Completed) 
         {
             std::cout << "list task completed\n";
-            liftEventBus_->publish(lift::domain::events::LiftTaskCompleteEvent{});
+            liftEventBus_->publish(lift::domain::events::LiftTaskCompletedEvent{});
         }
         else if (prev.task_status != lift::domain::entities::LiftTaskStatusCode::Canceled && next.task_status == lift::domain::entities::LiftTaskStatusCode::Canceled) 
         {
             std::cout << "list task canceled\n";
-            liftEventBus_->publish(lift::domain::events::LiftTaskCancelEvent{});
+            liftEventBus_->publish(lift::domain::events::LiftTaskCanceledEvent{});
         }
         else if (prev.task_status != lift::domain::entities::LiftTaskStatusCode::Paused && next.task_status == lift::domain::entities::LiftTaskStatusCode::Paused) 
         {

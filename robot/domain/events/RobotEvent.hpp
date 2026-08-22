@@ -11,14 +11,20 @@ namespace  robot::domain::events {
         std::string reason;
     };
 
-    struct MissionRunningEvent {};
-
-    struct MissionErrorEvent {
-        std::string reason;
+    struct MissionRunningEvent {
+        std::string mission_id;
     };
 
-    struct MissionCanceledEvent {};
-    struct MissionCompletedEvent {};
+    struct MissionErrorEvent {
+        std::string mission_id;
+    };
+
+    struct MissionCanceledEvent {
+        std::string mission_id;
+    };
+    struct MissionCompletedEvent {
+        std::string mission_id;
+    };
 
     
 
@@ -28,6 +34,6 @@ namespace  robot::domain::events {
         MissionRunningEvent,
         MissionErrorEvent,
         MissionCanceledEvent,
-        MissionRunningEvent
+        MissionCompletedEvent
     >;
 }

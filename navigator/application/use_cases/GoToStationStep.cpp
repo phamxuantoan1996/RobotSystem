@@ -17,7 +17,7 @@ namespace navigator::application::use_cases {
         auto promise  = std::make_shared<std::promise<common::ports::GotoStationStepResult>>();
         auto future   = promise->get_future();
         auto resolved = std::make_shared<std::atomic<bool>>(false);
-        auto handleId = controller_->subcribeEvents([&promise,resolved](const navigator::domain::events::NavigatorEvent& event){
+        auto handleId = controller_->subscribeEvents([&promise,resolved](const navigator::domain::events::NavigatorEvent& event){
             std::visit([&promise,&resolved](const auto& ev)
             {
                 using T = std::decay_t<decltype(ev)>;
@@ -51,11 +51,26 @@ namespace navigator::application::use_cases {
             return common::ports::GotoStationStepResult{.result = common::ports::GotoStationStepResult::Result::Failed};
         }
         auto result = future.get();
-        controller_->unSubcribeEvents(handleId);
+        controller_->unSubscribeEvents(handleId);
         return result;
     }
     int GoToStationStep::getActionIndex()
     {
         return actionIndex_;
+    }
+
+    void GoToStationStep::cancel()
+    {
+        controller_->cancel();
+    }
+
+    void GoToStationStep::resume()
+    {
+        controller_->resume();
+    }
+
+    void GoToStationStep::pause()
+    {
+        controller_->pause();
     }
 }

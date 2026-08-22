@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace gateway::application::adapter {
     GatewayController::GatewayController(std::unique_ptr<gateway::ports::IRobotGateway> gatewayDriver) 
@@ -53,5 +54,10 @@ namespace gateway::application::adapter {
     void GatewayController::handleEvent(const gateway::domain::events::GatewayEvent& event)
     {
         gatewayEventBus_->publish(event);
+    }
+
+    void GatewayController::setGetRobotStatusCallback(gateway::ports::IRobotGateway::GatewayGetRobotStateCallback cb)
+    {
+        gatewayDriver_->setGatewayGetRobotCallback(std::move(cb));
     }
 }

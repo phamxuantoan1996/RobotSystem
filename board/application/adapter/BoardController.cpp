@@ -77,7 +77,6 @@ namespace board::application::adapter {
                     if constexpr (std::is_same_v<T, board::domain::entities::LiftCommand>) {
                         bool success = false;
                         auto conveyor_command = board::domain::value_objects::BoardCommandBuilder::liftBuildCommand(cmd);
-                        // std::cout << conveyor_command.value() << std::endl;
                         if(conveyor_command)
                         {
                             auto ec = driver_->write(*conveyor_command, BOARD_POLL_STATE_TIMEOUT);
@@ -95,6 +94,7 @@ namespace board::application::adapter {
                         {
                             cmd.callback(success);
                         }
+                        std::this_thread::sleep_for(std::chrono::milliseconds(pollIntervalMs));
                     }
                     else if constexpr (std::is_same_v<T, board::domain::entities::SystemCommand>) {
                         bool success = false;
@@ -117,11 +117,12 @@ namespace board::application::adapter {
                         {
                             cmd.callback(success);
                         }
+                        std::this_thread::sleep_for(std::chrono::milliseconds(pollIntervalMs));
                     }
                     else if constexpr (std::is_same_v<T, board::domain::entities::IndicatorCommand>) {
                         bool success = false;
                         auto indicator_command = board::domain::value_objects::BoardCommandBuilder::indicatorBuildCommand(cmd);
-                        std::cout << indicator_command.value() << std::endl;
+                        // std::cout << indicator_command.value() << std::endl;
                         if(indicator_command)
                         {
                             auto ec = driver_->write(*indicator_command, BOARD_POLL_STATE_TIMEOUT);
@@ -139,8 +140,10 @@ namespace board::application::adapter {
                         {
                             cmd.callback(success);
                         }
+                        std::this_thread::sleep_for(std::chrono::milliseconds(pollIntervalMs));
                     }
-                }, *command);   
+                }, *command);
+                continue;   
             }
             
             auto poll_command = board::domain::value_objects::BoardCommandBuilder::systemBuildCommand(board::domain::entities::SystemCommand{.system_command_type = board::domain::entities::SystemCommandType::Poll});
@@ -185,7 +188,6 @@ namespace board::application::adapter {
                     // publish reconnected event
                 }
             }
-            
             std::this_thread::sleep_for(std::chrono::milliseconds(pollIntervalMs));
         }
         

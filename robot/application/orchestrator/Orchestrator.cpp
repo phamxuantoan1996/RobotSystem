@@ -16,9 +16,9 @@ namespace robot::application {
         }
     }
 
-    void Orchestrator::start() {
+    void Orchestrator::start() 
+    {
         if (running_) return; // Nếu đang chạy rồi thì bỏ qua
-        
         running_ = true;
         workerThread_ = std::thread(&Orchestrator::workerTask, this);
     }
@@ -41,7 +41,26 @@ namespace robot::application {
 
     void Orchestrator::cancel()
     {
-        cancelRequest = true;
+        cancelRequest_ = true;
+        if (currentRunningStep_) {
+            currentRunningStep_->cancel();
+        }
+    }
+
+    void Orchestrator::pause()
+    {
+        pauseRequest_ = true;
+        if (currentRunningStep_) {
+            currentRunningStep_->pause();
+        }
+    }
+
+    void Orchestrator::resume()
+    {
+        pauseRequest_ = false;
+        if (currentRunningStep_) {
+            currentRunningStep_->resume();
+        }
     }
 
     bool Orchestrator::enqueueMission(robot::domain::entities::RobotTask&& robot_task)
@@ -91,8 +110,15 @@ namespace robot::application {
                     {
                         std::lock_guard<std::mutex> lk(mutexState_);
                         stepIndex_ = step->getActionIndex();
+                        currentRunningStep_ = step.get(); 
+                        if (pauseRequest_) currentRunningStep_->pause();
                     }
                     auto result = step->excute(prevResultStep);
+                    {
+                        std::lock_guard<std::mutex> lk(mutexState_);
+                        // Xóa dấu vết con trỏ ngay lập tức để tránh Dangling Pointer
+                        currentRunningStep_ = nullptr; 
+                    }
                     std::visit([this](const auto& res) {
                         using T = std::decay_t<decltype(res)>;
                         if constexpr (std::is_same_v<T, common::ports::GotoStationStepResult>)
@@ -104,6 +130,20 @@ namespace robot::application {
                                     taskStatus_ = robot::domain::entities::RobotTaskStatus::Canceled;
                                 }
                                 else if(res.result == common::ports::GotoStationStepResult::Result::Failed)
+                                {
+                                    taskStatus_ = robot::domain::entities::RobotTaskStatus::Error;
+                                }
+                            }
+                        }
+                        else if constexpr (std::is_same_v<T, common::ports::LiftMoveStepResult>)
+                        {
+                            {
+                                std::lock_guard<std::mutex> lk(mutexState_);
+                                if(res.result == common::ports::LiftMoveStepResult::Result::Canceled)
+                                {
+                                    taskStatus_ = robot::domain::entities::RobotTaskStatus::Canceled;
+                                }
+                                else if(res.result == common::ports::LiftMoveStepResult::Result::Failed)
                                 {
                                     taskStatus_ = robot::domain::entities::RobotTaskStatus::Error;
                                 }
@@ -145,6 +185,9 @@ namespace robot::application {
                         }
                     }
                     stepIndex_ = -1;
+                    currentRunningStep_ = nullptr;
+                    cancelRequest_ = false;
+                    pauseRequest_ = false;
                 }
             }
             else {

@@ -25,5 +25,8 @@ namespace gateway::ports {
 
             using GatewayEventCallback = std::function<void(const gateway::domain::events::GatewayEvent& event)>;
             virtual void setGatewayEventCallback(GatewayEventCallback cb) = 0;
+
+            using GatewayGetRobotStateCallback = std::function<std::string(void)>;
+            virtual void setGatewayGetRobotCallback(GatewayGetRobotStateCallback cb) = 0;
     };
 }

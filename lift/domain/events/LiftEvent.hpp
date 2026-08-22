@@ -19,8 +19,8 @@ namespace lift::domain::events {
     struct LiftStatusClearEmergency {};
 
     struct LiftTaskRunningEvent {};
-    struct LiftTaskCompleteEvent {};
-    struct LiftTaskCancelEvent {};
+    struct LiftTaskCompletedEvent {};
+    struct LiftTaskCanceledEvent {};
     struct LiftTaskPausedEvent {
         uint8_t error_code;
         std::string reason;
@@ -36,8 +36,8 @@ namespace lift::domain::events {
         LiftStatusClearEmergency,
 
         LiftTaskRunningEvent,
-        LiftTaskCompleteEvent,
-        LiftTaskCancelEvent,
+        LiftTaskCompletedEvent,
+        LiftTaskCanceledEvent,
         LiftTaskPausedEvent
     >;
 }

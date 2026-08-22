@@ -18,3 +18,4 @@ namespace robot::domain::entities {
         Error = 19
     };
 }
+

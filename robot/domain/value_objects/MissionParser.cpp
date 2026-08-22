@@ -2,17 +2,25 @@
 #include "RobotStatus.hpp"
 #include "../navigator/application/use_cases/GoToStationStep.hpp"
 #include "../navigator/domain/value_objects/station.hpp"
-#include "RobotTask.hpp"
+
+#include "../lift/application/use_cases/LiftMoveStep.hpp"
+#include "../lift/domain/value_objects/LiftTarget.hpp"
+
+#include "../robot/domain/entities/RobotTask.hpp"
+#include <cstdint>
 #include <iostream>
 #include <json/value.h>
 #include <memory>
 #include <optional>
 #include <jsoncpp/json/json.h>
 #include <string>
+#include <utility>
 
 namespace robot::domain::value_objects {
-    MissionParser::MissionParser(std::shared_ptr<navigator::application::adapter::NavigatorController> navigatorController)
-    : navigatorController_(navigatorController)
+    MissionParser::MissionParser(std::shared_ptr<navigator::application::adapter::NavigatorController> navigatorController,
+        std::shared_ptr<lift::application::adapter::LiftController> liftController)
+    : navigatorController_(navigatorController),
+    liftController_(liftController)
     {
 
     }
@@ -53,6 +61,12 @@ namespace robot::domain::value_objects {
                     std::string action_name = action["name"].asString();
                     if(action_name == "action_navigation")
                     {
+                        /*
+                        "name":"action_navigation",
+                        "params": {
+                            "navigation_point": "LM123",
+                        }
+                        */
                         if(!action["params"].isObject())
                         {
                             mission_code = "";
@@ -87,7 +101,33 @@ namespace robot::domain::value_objects {
                             }
                         }
                         */
+                        if(!action["params"].isObject())
+                        {
+                            mission_code = "";
+                            break;
+                        }
+                        const Json::Value&  params = action["params"];
+                        if(!params["lift_point"].isString() || !params["lift_target"].isInt())
+                        {
+                            mission_code = "";
+                            break;
+                        }
 
+                        try {
+                            navigator::domain::value_objects::Station station(params["lift_point"].asString());
+                            auto step1 = std::make_unique<navigator::application::use_cases::GoToStationStep>(navigatorController_,station,action_index);
+                            steps.push_back(std::move(step1));
+
+                            lift::domain::value_objects::LiftTarget lift_target(static_cast<uint16_t>(params["lift_target"].asInt()));
+                            auto step2 = std::make_unique<lift::application::use_cases::LiftMoveStep>(liftController_,lift_target,action_index);
+                            steps.push_back(std::move(step2));
+                        }
+                        catch (const std::string& error_msg)
+                        {
+                            std::cerr << "Error: " << error_msg << "\n";
+                            mission_code = "";
+                            break;
+                        }
                     }
                     else {
                         mission_code = "";

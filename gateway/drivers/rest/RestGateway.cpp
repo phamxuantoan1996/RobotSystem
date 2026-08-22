@@ -1,6 +1,7 @@
 #include "RestGateway.hpp"
 #include "GatewayEvent.hpp"
 #include <drogon/HttpAppFramework.h>
+#include <drogon/HttpTypes.h>
 #include <drogon/drogon.h>
 #include <iostream>
 #include <utility>
@@ -94,6 +95,11 @@ namespace gateway::drivers::rest {
         std::cout << "[Drogon Gateway] Da dung HTTP Server.\n";
     }
 
+    void RestGateway::setGatewayGetRobotCallback(GatewayGetRobotStateCallback cb)
+    {
+        getRobotStatusCallback_ = cb;
+    }
+
     // thread server
     void RestGateway::drogonServerThread()
     {
@@ -179,6 +185,25 @@ namespace gateway::drivers::rest {
                 callback(resp); // Bắt buộc phải gọi callback
             },{drogon::Post}
         );
+        drogon::app().registerHandler("/status", [this](const drogon::HttpRequestPtr& req, 
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback) 
+            {
+                // TODO: Thêm logic EventBus hủy nhiệm vụ tại đây
+                std::string status = "";
+                if(getRobotStatusCallback_)
+                {
+                    status = getRobotStatusCallback_();
+                }
+                
+                auto resp = drogon::HttpResponse::newHttpResponse();
+                resp->setStatusCode(drogon::k200OK); // Hoặc giữ k202Accepted tùy logic của bạn
+                resp->setContentTypeCode(drogon::CT_APPLICATION_JSON);
+                resp->setBody(status); // Gửi thẳng chuỗi JSON này về client
+                callback(resp); 
+            },{drogon::Get}
+        );
+
+
         std::cout << "[Drogon Gateway] HTTP Server dang chay tren port " << port_ << "...\n";
         drogon::app().run(); 
     }

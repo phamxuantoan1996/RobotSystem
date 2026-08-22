@@ -1,6 +1,7 @@
 #include "../indicator/application/adapter/IndicatorController.hpp"
 #include <cstdint>
 #include <future>
+#include <iostream>
 #include <system_error>
 
 namespace indicator::application::adapter {
@@ -14,7 +15,6 @@ namespace indicator::application::adapter {
         auto promise = std::make_shared<std::promise<bool>>();
         auto future = promise->get_future();
         auto resolved = std::make_shared<std::atomic<bool>>();
-
         boardCommandQueue_->enqueue(board::domain::entities::IndicatorCommand {
             .indicator_command_type = board::domain::entities::IndicatorCommandType::SetColor,
             .color = static_cast<uint8_t>(color),

@@ -1,4 +1,5 @@
 #include "BoardCommandQueue.hpp"
+#include <iostream>
 
 namespace board::domain::value_objects {
     void BoardCommandQueue::enqueue(const board::domain::entities::BoardCommand& command)

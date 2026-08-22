@@ -78,12 +78,12 @@ namespace navigator::application::adapter {
     // ─────────────────────────────────────────────────────────────────────────────
     // subscribeEvents — RobotSystem dùng để nhận tất cả NavEvent
     // ─────────────────────────────────────────────────────────────────────────────
-    NavigatorController::HandlerId NavigatorController::subcribeEvents(NavigatorEventHandler handler)
+    NavigatorController::HandlerId NavigatorController::subscribeEvents(NavigatorEventHandler handler)
     {
         return navigatorEventBus_->subscribe(std::move(handler));
     }
 
-    void NavigatorController::unSubcribeEvents(NavigatorController::HandlerId id)
+    void NavigatorController::unSubscribeEvents(NavigatorController::HandlerId id)
     {
         navigatorEventBus_->unsubscribe(id);
     }

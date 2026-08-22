@@ -41,8 +41,8 @@ namespace navigator::application::adapter {
 
             using NavigatorEventHandler = std::function<void(const navigator::domain::events::NavigatorEvent&)>;
             using HandlerId = typename common::ports::IEventBus<navigator::domain::events::NavigatorEvent>::HandlerID;
-            HandlerId subcribeEvents(NavigatorEventHandler handler);
-            void unSubcribeEvents(HandlerId id);
+            HandlerId subscribeEvents(NavigatorEventHandler handler);
+            void unSubscribeEvents(HandlerId id);
 
 
         private:

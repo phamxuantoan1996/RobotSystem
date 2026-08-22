@@ -145,22 +145,100 @@
 // }
 
 
+// #include <csignal>
+// #include <iostream>
+// #include <atomic>
+// #include <memory>
+// #include <utility>
+
+// #include "../board/application/adapter/BoardController.hpp"
+// #include "../board/ports/IBoardTransport.hpp"
+// #include "../board/drivers/serial_transport/BoardSerialTransport.hpp"
+// #include "../board/domain/value_objects/BoardCommandQueue.hpp"
+
+// #include "../lift/application/adapter/LiftController.hpp"
+// #include "../lift/application/use_cases/LiftMoveStep.hpp"
+// #include "LiftTarget.hpp"
+// #include "indicator/application/adapter/IndicatorController.hpp"
+// #include "ports/IRobotStep.hpp"
+
+// std::atomic<bool> running{true};
+// void signalHandler(int signum) {
+//     std::cout << "\nTerminate program...\n" << std::endl;
+//     running = false;
+// }
+
+// int main(int argc,char *argv[])
+// {
+//     signal(SIGINT, signalHandler);
+//     signal(SIGTERM, signalHandler);
+
+//     board::drivers::serial_transport::SerialTransportConfig serialTransportConfig;
+//     serialTransportConfig.serial_port = "/dev/ttyUSB0";
+//     serialTransportConfig.baudrate = 115200;
+//     serialTransportConfig.timeout = 3000;
+//     auto boardDriver = std::make_unique<board::drivers::serial_transport::BoardSerialTransport>(std::move(serialTransportConfig));
+//     auto boardCommandQueue = std::make_shared<board::domain::value_objects::BoardCommandQueue>();
+//     auto boardController = std::make_shared<board::application::adapter::BoardController>(std::move(boardDriver),boardCommandQueue,100);
+
+
+//     auto liftController = std::make_shared<lift::application::adapter::LiftController>(boardCommandQueue);
+//     boardController->setCallbackUpdateState([liftController](const std::string& data) {
+//         liftController->updateState(data);
+//     });
+
+//     auto indicatorController = std::make_unique<indicator::application::adapter::IndicatorController>(boardCommandQueue);
+
+//     auto ec = boardController->connect();
+
+//     if(ec)
+//     {
+//         std::cerr << "Board Controller Initlize Error\n";
+//         return 1;
+//     }
+
+//     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+//     while(running)
+//     {
+//         // lift::application::use_cases::LiftMoveStep step1(liftController,lift::domain::value_objects::LiftTarget(0),0);
+//         // step1.excute(common::ports::UnknowStepResult{});
+//         // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+//         // lift::application::use_cases::LiftMoveStep step2(liftController,lift::domain::value_objects::LiftTarget(1),1);
+//         // step2.excute(common::ports::UnknowStepResult{});
+//         // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+//         indicatorController->setColor(indicator::domain::entities::ColorType::GreenBlink);
+//         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+//         indicatorController->setColor(indicator::domain::entities::ColorType::Green);
+//         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+//     }
+//     return 0;
+// }
+
+// test ghep noi cac module
+
+#include "navigator/application/adapter/NavigatorController.hpp"
+#include "navigator/drivers/seer/SeerNavigatorDriverReal.hpp"
+
+#include "board/application/adapter/BoardController.hpp"
+#include "board/drivers/serial_transport/BoardSerialTransport.hpp"
+#include "board/domain/value_objects/BoardCommandQueue.hpp"
+
+#include "lift/application/adapter/LiftController.hpp"
+
+#include "indicator/application/adapter/IndicatorController.hpp"
+
+#include "gateway/application/adapter/GatewayController.hpp"
+#include "gateway/drivers/rest/RestGateway.hpp"
+
+#include "reactor/indicator/IndicatorReactor.hpp"
+#include "robot/application/controller/RobotController.hpp"
+
 #include <csignal>
 #include <iostream>
 #include <atomic>
 #include <memory>
 #include <utility>
-
-#include "../board/application/adapter/BoardController.hpp"
-#include "../board/ports/IBoardTransport.hpp"
-#include "../board/drivers/serial_transport/BoardSerialTransport.hpp"
-#include "../board/domain/value_objects/BoardCommandQueue.hpp"
-
-#include "../lift/application/adapter/LiftController.hpp"
-#include "../lift/application/use_cases/LiftMoveStep.hpp"
-#include "LiftTarget.hpp"
-#include "indicator/application/adapter/IndicatorController.hpp"
-#include "ports/IRobotStep.hpp"
 
 std::atomic<bool> running{true};
 void signalHandler(int signum) {
@@ -168,18 +246,19 @@ void signalHandler(int signum) {
     running = false;
 }
 
-int main(int argc,char *argv[])
+int main(int argc, char *argv[])
 {
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
 
+    // khoi tao lift, indicator, board
     board::drivers::serial_transport::SerialTransportConfig serialTransportConfig;
     serialTransportConfig.serial_port = "/dev/ttyUSB0";
     serialTransportConfig.baudrate = 115200;
     serialTransportConfig.timeout = 3000;
     auto boardDriver = std::make_unique<board::drivers::serial_transport::BoardSerialTransport>(std::move(serialTransportConfig));
     auto boardCommandQueue = std::make_shared<board::domain::value_objects::BoardCommandQueue>();
-    auto boardController = std::make_shared<board_subsystem::adapter::BoardController>(std::move(boardDriver),boardCommandQueue,100);
+    auto boardController = std::make_shared<board::application::adapter::BoardController>(std::move(boardDriver),boardCommandQueue,100);
 
 
     auto liftController = std::make_shared<lift::application::adapter::LiftController>(boardCommandQueue);
@@ -188,29 +267,54 @@ int main(int argc,char *argv[])
     });
 
     auto indicatorController = std::make_unique<indicator::application::adapter::IndicatorController>(boardCommandQueue);
-
     auto ec = boardController->connect();
-
     if(ec)
     {
         std::cerr << "Board Controller Initlize Error\n";
         return 1;
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-    while(running)
+    // khoi tao navigator controller
+    auto seerDriver = std::make_unique<navigator::drivers::seer::SeerNavigatorDriverReal>(navigator::drivers::seer::SeerNavigatorDriverConfigParams{
+        .host = "192.168.1.107",
+        .timeout = 3000,
+        .pollStatusIntervals = 100
+    });
+    ec = seerDriver->connect();
+    if(ec)
     {
-        // lift::application::use_cases::LiftMoveStep step1(liftController,lift::domain::value_objects::LiftTarget(0),0);
-        // step1.excute(common::ports::UnknowStepResult{});
-        // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        // lift::application::use_cases::LiftMoveStep step2(liftController,lift::domain::value_objects::LiftTarget(1),1);
-        // step2.excute(common::ports::UnknowStepResult{});
-        // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        indicatorController->setColor(indicator::domain::entities::ColorType::GreenBlink);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        indicatorController->setColor(indicator::domain::entities::ColorType::Green);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::cerr << "Can't connect to SEER driver!\n";
+        return 1;
     }
+    std::cout << "Connected to SEER driver!\n";
+    auto navigatorController = std::make_shared<navigator::application::adapter::NavigatorController>(std::move(seerDriver));
+    ec = navigatorController->connect();
+    if(ec)
+    {
+        std::cerr << "Can't intilize Navigator controller!";
+        return 1;
+    }
+    std::cout << "Navigator controller initlized!\n";
+
+    // khoi tao gateway api
+    auto gatewayDriver = std::make_unique<gateway::drivers::rest::RestGateway>("http://127.0.0.1",3000);
+    auto gatewayController = std::make_shared<gateway::application::adapter::GatewayController>(std::move(gatewayDriver));
+    gatewayController->start();
+
+
+    // khoi tao robot controller
+    auto robotController = std::make_shared<robot::application::RobotController>(boardController,navigatorController,gatewayController,liftController);
+    
+    auto indicatorReactor = std::make_unique<reactor::IndicatorReactor>(robotController,boardController,navigatorController,std::move(indicatorController),liftController);
+    
+    robotController->start();
+    
+
+    // khoi tao indicator reactor
+    while (running) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+    
+
     return 0;
 }

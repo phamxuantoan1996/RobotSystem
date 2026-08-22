@@ -29,12 +29,15 @@ namespace gateway::drivers::rest {
 
             void setGatewayEventCallback(GatewayEventCallback cb) override;
 
+            void setGatewayGetRobotCallback(GatewayGetRobotStateCallback cb) override;
+
         private:
             std::string fleetUrl_;
             uint16_t port_;
             std::atomic<bool> running_{false};
             std::thread drogonThread_;
             GatewayEventCallback eventCallback_;
+            GatewayGetRobotStateCallback getRobotStatusCallback_;
             
             std::atomic<gateway::domain::entities::CollisionSignalType> signal_type{gateway::domain::entities::CollisionSignalType::Exception};
             std::atomic<gateway::domain::entities::TransferSignalType> transfer_type{gateway::domain::entities::TransferSignalType::Unknown};

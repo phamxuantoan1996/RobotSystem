@@ -26,6 +26,8 @@ namespace gateway::application::adapter {
             void start();
             void stop();
 
+            void setGetRobotStatusCallback(gateway::ports::IRobotGateway::GatewayGetRobotStateCallback cb);
+
             using GatewayEventHandler = std::function<void(const gateway::domain::events::GatewayEvent&)>;
             using HandlerId = typename common::ports::IEventBus<gateway::domain::events::GatewayEvent>::HandlerID;
             HandlerId subcribeEvents(GatewayEventHandler handler);

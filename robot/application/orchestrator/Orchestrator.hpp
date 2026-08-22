@@ -7,6 +7,7 @@
 #include <thread>
 #include "../robot/domain/entities/RobotTask.hpp"
 #include "../robot/domain/value_objects/RobotTaskQueue.hpp"
+#include "ports/IRobotStep.hpp"
 namespace robot::application {
     class Orchestrator {
         public:
@@ -19,6 +20,8 @@ namespace robot::application {
                 robot::domain::entities::RobotTaskStatus getTaskStatus() const;
 
                 void cancel();
+                void pause();
+                void resume();
                 
                 bool enqueueMission(robot::domain::entities::RobotTask&& robot_task);
 
@@ -37,15 +40,18 @@ namespace robot::application {
             private:
                 std::thread workerThread_;
                 std::atomic<bool> running_ = {false};
-                std::atomic<bool> cancelRequest = {false};
+                std::atomic<bool> cancelRequest_ = {false};
+                std::atomic<bool> pauseRequest_ = {false};
 
                 std::string missionIdCurrent_ = "";
                 robot::domain::entities::RobotTaskStatus taskStatus_ = robot::domain::entities::RobotTaskStatus::Unknown;
-                int stepIndex_ = -1;
+                std::atomic<int> stepIndex_{1};
+                common::ports::IRobotStep* currentRunningStep_{nullptr}; 
                 mutable std::mutex mutexState_;
 
                 robot::domain::value_objects::RobotTaskQueue taskQueue_;
                 std::condition_variable cvEnqueue_;
+                
                 std::mutex mutexEnqueue_;
 
                 MissionRunningCallback onMissionRunning_;
