@@ -283,12 +283,11 @@ namespace lift::application::adapter {
 
         if (prev.device_status != lift::domain::entities::LiftDeviceStatusCode::Emergency && next.device_status == lift::domain::entities::LiftDeviceStatusCode::Emergency) 
         {
-            // liftEventBus_->publish(lift::domain::events::);
-            std::cout << "lift set emergency\n";
+            liftEventBus_->publish(lift::domain::events::LiftStatusSetEmergencyEvent{});
         }
         else if(prev.device_status == lift::domain::entities::LiftDeviceStatusCode::Emergency && next.device_status != lift::domain::entities::LiftDeviceStatusCode::Emergency)
         {
-            std::cout << "lift clear emergency\n";
+            liftEventBus_->publish(lift::domain::events::LiftStatusClearEmergencyEvent{});
         }
 
         

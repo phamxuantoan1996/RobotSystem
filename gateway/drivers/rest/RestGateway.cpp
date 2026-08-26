@@ -94,6 +94,7 @@ namespace gateway::drivers::rest {
         }
         std::cout << "[Drogon Gateway] Da dung HTTP Server.\n";
     }
+    
 
     void RestGateway::setGatewayGetRobotCallback(GatewayGetRobotStateCallback cb)
     {
@@ -204,7 +205,7 @@ namespace gateway::drivers::rest {
         );
 
 
-        std::cout << "[Drogon Gateway] HTTP Server dang chay tren port " << port_ << "...\n";
+        std::cout << "[Drogon Gateway] HTTP Server dang chay tren port " << port_ << "  ...\n";
         drogon::app().run(); 
     }
 

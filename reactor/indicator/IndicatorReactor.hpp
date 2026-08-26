@@ -27,7 +27,8 @@ namespace reactor {
         bool navigator_task_running = false;
 
         bool lift_error = false;
-        bool lift_task_running = false; 
+        bool lift_task_running = false;
+        bool lift_emergency = false; 
 
         bool board_error = false;
 

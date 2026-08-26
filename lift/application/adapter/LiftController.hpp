@@ -9,6 +9,7 @@
 #include <memory>
 #include <mutex>
 #include <system_error>
+#include <algorithm>
 
 namespace lift::application::adapter {
     class LiftController {

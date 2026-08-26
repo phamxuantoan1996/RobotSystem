@@ -362,22 +362,28 @@ namespace navigator::drivers::seer {
                     const Json::Value error = errors[i];
                     // lay error code
                     std::string errorCode = "";
-                    Json::Value::Members keys = error.getMemberNames();
-                    for (const std::string& key : keys) 
-                    {
-                        // Nếu key KHÔNG PHẢI là "desc" và cũng KHÔNG PHẢI là "times"
-                        if (key != "desc" && key != "times") 
-                        {
-                            // Đây chính là mã lỗi bạn cần (ví dụ: "52201" hoặc "52118")
-                            errorCode = key; 
-                        }
-                    }
+                    // Json::Value::Members keys = error.getMemberNames();
+                    // for (const std::string& key : keys) 
+                    // {
+                    //     // Nếu key KHÔNG PHẢI là "desc" và cũng KHÔNG PHẢI là "times"
+                    //     if (key != "desc" && key != "times") 
+                    //     {
+                    //         // Đây chính là mã lỗi bạn cần (ví dụ: "52201" hoặc "52118")
+                    //         errorCode = key; 
+                    //     }
+                    // }
                     // lay desc error
                     std::string descError = "";
                     if(error.isMember("desc") && error["desc"].isString())
                     {
                         descError = error["desc"].asString();
                     }
+
+                    if(error.isMember("code") && error["code"].isInt())
+                    {
+                        errorCode = std::to_string(error["code"].asInt());
+                    }
+
                     if(!errorCode.empty() && !descError.empty())
                     {
                         s.errors[errorCode] = descError;

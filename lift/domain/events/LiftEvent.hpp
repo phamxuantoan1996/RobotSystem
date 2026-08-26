@@ -15,8 +15,8 @@ namespace lift::domain::events {
         uint8_t error_code;
     };
 
-    struct LiftStatusSetEmergency {};
-    struct LiftStatusClearEmergency {};
+    struct LiftStatusSetEmergencyEvent {};
+    struct LiftStatusClearEmergencyEvent {};
 
     struct LiftTaskRunningEvent {};
     struct LiftTaskCompletedEvent {};
@@ -32,8 +32,8 @@ namespace lift::domain::events {
         LiftStatusBusyEvent,
         LiftStatusSetErrorEvent,
         LiftStatusClearErrorEvent,
-        LiftStatusSetEmergency,
-        LiftStatusClearEmergency,
+        LiftStatusSetEmergencyEvent,
+        LiftStatusClearEmergencyEvent,
 
         LiftTaskRunningEvent,
         LiftTaskCompletedEvent,

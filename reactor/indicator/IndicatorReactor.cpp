@@ -268,6 +268,22 @@ namespace reactor {
                 }
                 updateLight();
             }
+            else if constexpr (std::is_same_v<T, lift::domain::events::LiftStatusClearEmergencyEvent>)
+            {
+                {
+                    std::lock_guard<std::mutex> lk(mutexState_);
+                    indicatorReactorState_.lift_emergency = false;
+                }
+                updateLight();
+            }
+            else if constexpr (std::is_same_v<T, lift::domain::events::LiftStatusSetEmergencyEvent>)
+            {
+                {
+                    std::lock_guard<std::mutex> lk(mutexState_);
+                    indicatorReactorState_.lift_emergency = true;
+                }
+                updateLight();
+            }
         },e);
     }
 
@@ -280,7 +296,7 @@ namespace reactor {
         }
         indicator::domain::entities::ColorType newColor = indicator::domain::entities::ColorType::Off;
 
-        if(stateSnapshot.navigator_emergency)
+        if(stateSnapshot.navigator_emergency || stateSnapshot.lift_emergency)
         {
             newColor = indicator::domain::entities::ColorType::RedBlink;
         }
@@ -288,7 +304,7 @@ namespace reactor {
         {
             newColor = indicator::domain::entities::ColorType::Red;
         }
-        else if (stateSnapshot.navigator_task_running || stateSnapshot.lift_task_running || stateSnapshot.mission_running)
+        else if (stateSnapshot.lift_task_running || stateSnapshot.mission_running)
         {
             /* code */
             newColor = indicator::domain::entities::ColorType::Green;

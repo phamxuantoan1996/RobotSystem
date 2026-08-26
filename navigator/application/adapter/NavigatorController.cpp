@@ -88,6 +88,8 @@ namespace navigator::application::adapter {
         navigatorEventBus_->unsubscribe(id);
     }
 
+    void NavigatorController::onRelocation(RelocationConfirmCallback cb) { onRelocationConfirm_ = std::move(cb);}
+
     void NavigatorController::handleEvent(const domain::events::NavigatorEvent& event)
     {
         // 1. Dispatch typed callbacks
@@ -95,23 +97,27 @@ namespace navigator::application::adapter {
             using T = std::decay_t<decltype(e)>;
             if constexpr (std::is_same_v<T, domain::events::NavigatorArrivedEvent>)
             {     
-                std::cout << "Arrived.\n";
+                // std::cout << "Arrived.\n";
             }
             else if constexpr (std::is_same_v<T, domain::events::NavigatorSetBlockEvent>)
             {
-                std::cout << "Blocked.\n";
+                // std::cout << "Blocked.\n";
             }
             else if constexpr (std::is_same_v<T, domain::events::NavigatorClearBlockEvent>)
             {
-                std::cout << "Unblocked.\n";
+                // std::cout << "Unblocked.\n";
             }
             else if constexpr (std::is_same_v<T, domain::events::NavigatorSetEmergencyEvent>)
             {
-                std::cout << "Emergency.\n";
+                // std::cout << "Emergency.\n";
             }
             else if constexpr (std::is_same_v<T, domain::events::NavigatorClearEmergencyEvent>)
             {
-                std::cout << "Clear emergency.\n";
+                // std::cout << "Clear emergency.\n";
+            }
+            else if constexpr (std::is_same_v<T, domain::events::NavigatorRelocationConfirmEvent>)
+            {
+                onRelocationConfirm_(e);
             }
             else if constexpr (std::is_same_v<T, domain::events::NavigatorDisconnectEvent>) {
                 // Fire lên EventBus trước

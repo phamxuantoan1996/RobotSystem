@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <variant>
+#include <algorithm>
 #include "NavigatorState.hpp"
 #include "NavigatorEvent.hpp"
 #include "SeerNavigatorStateMapper.hpp"

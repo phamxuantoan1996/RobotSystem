@@ -148,7 +148,7 @@ namespace robot::application {
                 {
                     {
                         std::lock_guard<std::mutex> lk(mutexState_);
-                        systemError_.navigator_error = true;
+                        systemError_.navigator_error = false;
                     }
                     updateRobotStatus();
                 }
@@ -245,6 +245,22 @@ namespace robot::application {
                     {
                         std::lock_guard<std::mutex> lk(mutexState_);
                         systemError_.lift_error = false;
+                    }
+                    updateRobotStatus();
+                }
+                else if constexpr (std::is_same_v<T, lift::domain::events::LiftStatusSetEmergencyEvent>)
+                {
+                    {
+                        std::lock_guard<std::mutex> lk(mutexState_);
+                        systemError_.lift_emergency = true;
+                    }
+                    updateRobotStatus();
+                }
+                else if constexpr (std::is_same_v<T, lift::domain::events::LiftStatusClearEmergencyEvent>)
+                {
+                    {
+                        std::lock_guard<std::mutex> lk(mutexState_);
+                        systemError_.lift_emergency = false;
                     }
                     updateRobotStatus();
                 }
@@ -419,7 +435,7 @@ namespace robot::application {
         std::lock_guard<std::mutex> lk(mutexState_);
         if(systemError_.navigator_emergency || systemError_.navigator_error || systemError_.navigator_failed 
             || systemError_.navigator_fatal || systemError_.navigator_disconnected || systemError_.lift_error
-            || systemError_.mission_error || systemError_.board_error)
+            || systemError_.mission_error || systemError_.board_error || systemError_.lift_emergency)
         {
             robotStatus_ = robot::domain::entities::RobotStatusCode::Error;
         }
@@ -431,7 +447,7 @@ namespace robot::application {
         {
             robotStatus_ = robot::domain::entities::RobotStatusCode::PauseManual;
         }
-        else if(systemError_.mission_running || systemError_.lift_task_running || systemError_.navigator_task_running)
+        else if(systemError_.mission_running || systemError_.lift_task_running)
         {
             robotStatus_ = robot::domain::entities::RobotStatusCode::Active;
         }

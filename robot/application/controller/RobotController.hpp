@@ -29,6 +29,7 @@ namespace robot::application {
 
         bool lift_error = false;
         bool lift_task_running = false;
+        bool lift_emergency = false;
 
         bool mission_error = false;
         bool mission_running = false;

@@ -234,6 +234,9 @@
 #include "reactor/indicator/IndicatorReactor.hpp"
 #include "robot/application/controller/RobotController.hpp"
 
+#include "logger/application/adapter/LogController.hpp"
+#include "logger/drivers/file/FileLogWriter.hpp"
+
 #include <csignal>
 #include <iostream>
 #include <atomic>
@@ -253,7 +256,7 @@ int main(int argc, char *argv[])
 
     // khoi tao lift, indicator, board
     board::drivers::serial_transport::SerialTransportConfig serialTransportConfig;
-    serialTransportConfig.serial_port = "/dev/ttyUSB0";
+    serialTransportConfig.serial_port = "/dev/ttyS0";
     serialTransportConfig.baudrate = 115200;
     serialTransportConfig.timeout = 3000;
     auto boardDriver = std::make_unique<board::drivers::serial_transport::BoardSerialTransport>(std::move(serialTransportConfig));
@@ -276,7 +279,7 @@ int main(int argc, char *argv[])
 
     // khoi tao navigator controller
     auto seerDriver = std::make_unique<navigator::drivers::seer::SeerNavigatorDriverReal>(navigator::drivers::seer::SeerNavigatorDriverConfigParams{
-        .host = "192.168.1.107",
+        .host = "192.168.1.112",
         .timeout = 3000,
         .pollStatusIntervals = 100
     });
@@ -288,6 +291,10 @@ int main(int argc, char *argv[])
     }
     std::cout << "Connected to SEER driver!\n";
     auto navigatorController = std::make_shared<navigator::application::adapter::NavigatorController>(std::move(seerDriver));
+    navigatorController->onRelocation([&navigatorController](const navigator::domain::events::NavigatorRelocationConfirmEvent&) {
+        std::cout << "confirm location\n";
+        navigatorController->confirmLocation();
+    });
     ec = navigatorController->connect();
     if(ec)
     {
@@ -306,7 +313,11 @@ int main(int argc, char *argv[])
     auto robotController = std::make_shared<robot::application::RobotController>(boardController,navigatorController,gatewayController,liftController);
     
     auto indicatorReactor = std::make_unique<reactor::IndicatorReactor>(robotController,boardController,navigatorController,std::move(indicatorController),liftController);
-    
+    indicatorReactor->start();
+
+    auto loggerDriver = std::make_unique<logger::drivers::file::FileLogWriter>();
+    auto loggerController = std::make_unique<logger::application::adapter::LogController>(std::move(loggerDriver),robotController,boardController,navigatorController,liftController);
+
     robotController->start();
     
 

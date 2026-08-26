@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
 #include <vector>
+#include <algorithm>
 #include "../domain/value_objects/station.hpp"
 
 using namespace navigator::domain::value_objects;

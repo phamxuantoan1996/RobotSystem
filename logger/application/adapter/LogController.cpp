@@ -73,11 +73,11 @@ namespace logger::application::adapter {
                     {
                         log(LogLevel::Info, "Lift", "Completed");
                     }
-                    else if constexpr (std::is_same_v<T, lift::domain::events::LiftStatusSetEmergency>)
+                    else if constexpr (std::is_same_v<T, lift::domain::events::LiftStatusSetEmergencyEvent>)
                     {
                         log(LogLevel::Info, "Lift", "Set emergency");
                     }
-                    else if constexpr (std::is_same_v<T, lift::domain::events::LiftStatusClearEmergency>)
+                    else if constexpr (std::is_same_v<T, lift::domain::events::LiftStatusClearEmergencyEvent>)
                     {
                         log(LogLevel::Info, "Lift", "Clear emergency");
                     }

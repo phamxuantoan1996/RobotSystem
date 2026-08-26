@@ -39,6 +39,9 @@ namespace navigator::application::adapter {
 
             domain::entities::NavigatorState state() const;
 
+            using RelocationConfirmCallback= std::function<void(const navigator::domain::events::NavigatorRelocationConfirmEvent&)>;
+            void onRelocation(RelocationConfirmCallback cb);
+
             using NavigatorEventHandler = std::function<void(const navigator::domain::events::NavigatorEvent&)>;
             using HandlerId = typename common::ports::IEventBus<navigator::domain::events::NavigatorEvent>::HandlerID;
             HandlerId subscribeEvents(NavigatorEventHandler handler);
@@ -51,5 +54,7 @@ namespace navigator::application::adapter {
             std::unique_ptr<common::application::EventBus<navigator::domain::events::NavigatorEvent>> navigatorEventBus_;
 
             navigator::application::services::NavigatorReconnectService reconnectService_;
+
+            RelocationConfirmCallback onRelocationConfirm_;
     };
 }

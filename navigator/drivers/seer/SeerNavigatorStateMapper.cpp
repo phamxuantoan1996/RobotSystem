@@ -361,11 +361,13 @@ namespace navigator::drivers::seer {
 
         // duyet qua next.errors
         for (const auto& [key, value] : next.errors) {
+            
             if (diff_tracker.count(key)) { 
                 diff_tracker.erase(key); // Xóa luôn khỏi tracker vì cả 2 unordered map deu co
             } else {
                 diff_tracker[key] = -1;  // Nếu Map A chưa có, thì đây là key chỉ có ở B
             }
+            
         }
         std::vector<domain::events::NavigatorEvent> events;
         // duyet qua diff_tracker de detect clear error va set error
@@ -373,9 +375,11 @@ namespace navigator::drivers::seer {
         {
             if(value < 0) // nam trong next.errors => set error event
             {
-                events.push_back(domain::events::NavigatorSetErrorEvent{.code = key,.desc=next.errors.at(key)});
+                if(key != "53900")
+                    events.push_back(domain::events::NavigatorSetErrorEvent{.code = key,.desc=next.errors.at(key)});
             }
             else { // nam trong prev.errors => clear error event
+                if(key != "53900")
                 events.push_back(domain::events::NavigatorClearErrorEvent{.code = key});
             }
         }
@@ -440,8 +444,11 @@ namespace navigator::drivers::seer {
 
         if (auto e = checkTaskStarted(prev, next))
             events.push_back(std::move(*e));
+
         
         if (!activeTaskId.empty()) {
+           
+        
             if (auto e = checkTaskArrived(prev, next, activeTaskId))
             {
                 activeTaskId.clear();
