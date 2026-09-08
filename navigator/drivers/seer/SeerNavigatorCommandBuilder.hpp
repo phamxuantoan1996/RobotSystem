@@ -18,11 +18,18 @@ namespace navigator::drivers::seer {
         RelocationReq = 0x07D2, // port 19205
         ConfirmCorrectRelocationReq = 0x07D3, // port 19205
         OpenLoopMotionReq = 0x07DA, // port 19205
+        StopOpenLoopMotionReq = 0x07D0, // 19205
+        SwitchMapReq = 0x07E6, // 19205
+        
 
         PlayAudioReq = 0x1770,
         StopAudioReq = 0x177C,
         PauseAudioReq = 0x177A,
         ResumeAudioReq = 0x177B,
+
+        SetShelfReq = 0x1105, // 19207
+        ClearSetReq = 0x1104, // 19207
+        
 
         // Response (Request + 0x2710)
         StatusAll1Res = 0x2B5C,
@@ -35,11 +42,17 @@ namespace navigator::drivers::seer {
         RelocationRes = 0x2EE2,
         ConfirmCorrectRelocationRes = 0x22E3,
         OpenLoopMotionRes = 0x2EEA,
+        StopOpenLoopMotionRes = 0x2EE0,
 
         PlayAudioRes = 0x3E80,
         StopPlayingAudioRes = 0x3E8C,
         PauseAudioRes = 0x3E8A,
-        ResumeAudioRes = 0x3E8B
+        ResumeAudioRes = 0x3E8B,
+
+        SetShelfRes = 0x3815,
+        ClearShelfRes = 0x3814,
+        SwitchMapRes = 0x2EF6,
+
     };
 
     struct GoTargetOptions {
@@ -70,12 +83,17 @@ namespace navigator::drivers::seer {
             navigator::drivers::seer::SeerNavigatorFrame relocation(double x, double y, double angle);
             navigator::drivers::seer::SeerNavigatorFrame confirmLocation();
             navigator::drivers::seer::SeerNavigatorFrame openLoopMotion(double vx,double vy, double w, uint32_t duration_ms);
+            navigator::drivers::seer::SeerNavigatorFrame stopOpenLoopMotion();
 
             navigator::drivers::seer::SeerNavigatorFrame playAudio(const std::string& nameAudio);
             navigator::drivers::seer::SeerNavigatorFrame stopAudio();
             navigator::drivers::seer::SeerNavigatorFrame pauseAudio();
             navigator::drivers::seer::SeerNavigatorFrame resumeAudio();
 
+            navigator::drivers::seer::SeerNavigatorFrame setShelf(std::string shelf_name);
+            navigator::drivers::seer::SeerNavigatorFrame clearShelf();
+
+            navigator::drivers::seer::SeerNavigatorFrame switchMap(std::string map_name);
         private:
             uint16_t nextSerial();
             uint16_t serial_ = 0;

@@ -3,6 +3,7 @@
 #include "NavigatorState.hpp"
 #include "SeerNavigatorCommandBuilder.hpp"
 #include "SeerNavigatorConnectionReal.hpp"
+#include <cstdint>
 #include <iostream>
 #include <jsoncpp/json/json.h>
 #include <memory>
@@ -20,10 +21,12 @@ namespace navigator::drivers::seer {
 
         }
         else { // real
+            
             statusConn_ = std::make_unique<navigator::drivers::seer::SeerNavigatorConnectionReal>(configParams_.host,configParams_.statusPort,configParams_.timeout);
             navConn_ = std::make_unique<navigator::drivers::seer::SeerNavigatorConnectionReal>(configParams_.host,configParams_.navPort,configParams_.timeout);
             controlConn_ = std::make_unique<navigator::drivers::seer::SeerNavigatorConnectionReal>(configParams_.host,configParams_.controlPort,configParams_.timeout);
             otherConn_ = std::make_unique<navigator::drivers::seer::SeerNavigatorConnectionReal>(configParams_.host,configParams_.otherPort,configParams_.timeout);
+            configConn_ = std::make_unique<navigator::drivers::seer::SeerNavigatorConnectionReal>(configParams_.host,configParams_.configPort,configParams_.timeout);
         }
     }
     SeerNavigatorDriverReal::~SeerNavigatorDriverReal()
@@ -44,6 +47,7 @@ namespace navigator::drivers::seer {
             navConn_->disconnect();
             controlConn_->disconnect();
             otherConn_->disconnect();
+            configConn_->disconnect();
             if(workerThread_.joinable())
             {
                 workerThread_.join();
@@ -77,6 +81,15 @@ namespace navigator::drivers::seer {
             return ec;
         }
 
+        if(auto ec = configConn_->connect())
+        {
+            statusConn_->disconnect();
+            navConn_->disconnect();
+            controlConn_->disconnect();
+            otherConn_->disconnect();
+            return ec;
+        }
+
         connected_ = true;
         running_ = true;
         workerThread_ = std::thread(&SeerNavigatorDriverReal::workerTask,this);
@@ -93,6 +106,7 @@ namespace navigator::drivers::seer {
         navConn_->disconnect();
         controlConn_->disconnect();
         otherConn_->disconnect();
+        configConn_->disconnect();
         connected_ = false;
     }
     bool SeerNavigatorDriverReal::isConnected() const
@@ -134,6 +148,26 @@ namespace navigator::drivers::seer {
             return std::make_error_code(std::errc::protocol_error);
         return {};
     }
+
+    // send Config Command + await ACK
+    std::error_code SeerNavigatorDriverReal::sendConfigCommand(const navigator::drivers::seer::SeerNavigatorFrame& req, uint16_t expectedResType)
+    {
+        std::lock_guard<std::mutex> lk(configMutex_);
+        auto res = configConn_->sendRequest(req);
+
+        if (!res.has_value())
+            return std::make_error_code(std::errc::timed_out);
+
+        if (res->msgType != expectedResType)
+            return std::make_error_code(std::errc::protocol_error);
+
+        // ret_code == 0 or missing means success (per SEER doc)
+        if (parseRetCode(res->payload) != 0)
+            return std::make_error_code(std::errc::protocol_error);
+        return {};
+    }
+
+
     // send Other Command + await ACK
     std::error_code SeerNavigatorDriverReal::SeerNavigatorDriverReal::sendOtherCommand(const navigator::drivers::seer::SeerNavigatorFrame& req, uint16_t expectedResType)
     {
@@ -477,6 +511,7 @@ namespace navigator::drivers::seer {
                     prev          = prevSnapshot_;
                     activeTaskId  = activeTaskId_;
                     state_  = next;
+                    state_.ip_address = configParams_.host;
                     prevSnapshot_ = stateMapper_.snapshotOf(next);
                 }
 
@@ -558,7 +593,6 @@ namespace navigator::drivers::seer {
         if (!ec) 
         {
             std::lock_guard<std::mutex> lk(mutexState_);
-            activeTaskId_.clear();
         }
         return ec;
     }
@@ -585,5 +619,34 @@ namespace navigator::drivers::seer {
     void SeerNavigatorDriverReal::setNavigatorEventCallback(NavigatorEventCallback cb)
     {
         eventCallback_ = std::move(cb);
+    }
+
+    std::error_code SeerNavigatorDriverReal::setShelf(std::string shelf_name)
+    {
+        auto frame = cmdBuilder_.setShelf(shelf_name);
+        return sendConfigCommand(frame, static_cast<uint16_t>(SeerNavigatorMessageNumber::SetShelfRes));
+    }
+
+    std::error_code SeerNavigatorDriverReal::clearShelf()
+    {
+        auto frame = cmdBuilder_.clearShelf();
+        return sendConfigCommand(frame, static_cast<uint16_t>(SeerNavigatorMessageNumber::ClearShelfRes));
+    }
+
+    std::error_code SeerNavigatorDriverReal::switchMap(std::string map_name)
+    {
+        auto frame = cmdBuilder_.switchMap(map_name);
+        return sendControlCommand(frame, static_cast<uint16_t>(SeerNavigatorMessageNumber::SwitchMapRes));
+    }
+
+    std::error_code SeerNavigatorDriverReal::openLoopMotion(navigator::domain::value_objects::Velocity v,uint32_t duration)
+    {
+        auto frame = cmdBuilder_.openLoopMotion(v.getVx(), v.getVy(), v.getVw(), duration);
+        return sendControlCommand(frame, static_cast<int>(SeerNavigatorMessageNumber::OpenLoopMotionRes));
+    }
+    std::error_code SeerNavigatorDriverReal::stopOpenLoopMotion()
+    {
+        auto frame = cmdBuilder_.stopOpenLoopMotion();
+        return sendControlCommand(frame, static_cast<uint16_t>(SeerNavigatorMessageNumber::StopOpenLoopMotionRes));
     }
 }

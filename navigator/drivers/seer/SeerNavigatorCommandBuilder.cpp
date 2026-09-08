@@ -1,6 +1,7 @@
 #include "SeerNavigatorCommandBuilder.hpp"
 #include "SeerNavigatorFrameCodec.hpp"
 #include "NavigatorState.hpp"
+#include <iostream>
 #include <sstream>
 #include <iomanip>
 #include <chrono>
@@ -188,6 +189,14 @@ namespace navigator::drivers::seer {
         return frame;
     }
 
+    navigator::drivers::seer::SeerNavigatorFrame SeerNavigatorCommandBuilder::stopOpenLoopMotion()
+    {
+        navigator::drivers::seer::SeerNavigatorFrame frame;
+        frame.serial  = nextSerial();
+        frame.msgType = static_cast<uint16_t>(SeerNavigatorMessageNumber::StopOpenLoopMotionReq);
+        return frame;
+    }
+
     navigator::drivers::seer::SeerNavigatorFrame SeerNavigatorCommandBuilder::playAudio(const std::string& nameAudio)
     {
         // {"name":"collision","loop":true}
@@ -223,6 +232,42 @@ namespace navigator::drivers::seer {
         navigator::drivers::seer::SeerNavigatorFrame frame;
         frame.serial  = nextSerial();
         frame.msgType = static_cast<uint16_t>(SeerNavigatorMessageNumber::ResumeAudioReq);
+        return frame;
+    }
+
+    navigator::drivers::seer::SeerNavigatorFrame SeerNavigatorCommandBuilder::setShelf(std::string shelf_name)
+    {
+        std::ostringstream json;
+        json << std::fixed << std::setprecision(4);
+        json << "{"
+            << "\"object_path\":\"" << shelf_name << "\""
+            << "}";
+
+        navigator::drivers::seer::SeerNavigatorFrame frame;
+        frame.serial  = nextSerial();
+        frame.msgType = static_cast<uint16_t>(SeerNavigatorMessageNumber::SetShelfReq);
+        frame.payload = json.str();
+        return frame;
+    }
+    navigator::drivers::seer::SeerNavigatorFrame SeerNavigatorCommandBuilder::clearShelf()
+    {
+        navigator::drivers::seer::SeerNavigatorFrame frame;
+        frame.serial  = nextSerial();
+        frame.msgType = static_cast<uint16_t>(SeerNavigatorMessageNumber::ClearSetReq);
+        return frame;
+    }
+    navigator::drivers::seer::SeerNavigatorFrame SeerNavigatorCommandBuilder::switchMap(std::string map_name)
+    {
+        std::ostringstream json;
+        json << std::fixed << std::setprecision(4);
+        json << "{"
+            << "\"map_name\":\"" << map_name << "\""
+            << "}";
+
+        navigator::drivers::seer::SeerNavigatorFrame frame;
+        frame.serial  = nextSerial();
+        frame.msgType = static_cast<uint16_t>(SeerNavigatorMessageNumber::SwitchMapReq);
+        frame.payload = json.str();
         return frame;
     }
 }

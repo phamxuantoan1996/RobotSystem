@@ -1,6 +1,9 @@
 #pragma once
 #include "INavigatorDriver.hpp"
+#include "INavigatorRecognition.hpp"
+#include "INavigatorSwitchingMap.hpp"
 #include "ISeerNavigatorConnection.hpp"
+#include "INavigatorOpenLoopMotion.hpp"
 #include "NavigatorState.hpp"
 #include "SeerNavigatorCommandBuilder.hpp"
 #include "SeerNavigatorFrameCodec.hpp"
@@ -25,7 +28,7 @@ namespace navigator::drivers::seer {
         std::string mode = "real"; // real, sim, test
     };
 
-    class SeerNavigatorDriverReal : public ports::INavigatorDriver {
+    class SeerNavigatorDriverReal : public ports::INavigatorDriver, public ports::INavigatorRecognition, public ports::INavigatorSwitchingMap, public ports::INavigatorOpenLoopMotion {
         public:
             explicit SeerNavigatorDriverReal(SeerNavigatorDriverConfigParams configParams);
             ~SeerNavigatorDriverReal() override;
@@ -46,6 +49,14 @@ namespace navigator::drivers::seer {
 
             navigator::domain::entities::NavigatorState getState() const override;
             void setNavigatorEventCallback(NavigatorEventCallback cb) override;
+
+            std::error_code setShelf(std::string shelf_name) override;
+            std::error_code clearShelf() override;
+
+            std::error_code switchMap(std::string map_name) override;
+
+            std::error_code openLoopMotion(navigator::domain::value_objects::Velocity v,uint32_t duration) override;
+            std::error_code stopOpenLoopMotion() override;
         private:
             // background poll loop
             void workerTask();
@@ -59,6 +70,10 @@ namespace navigator::drivers::seer {
             // send Other Command + await ACK
             std::error_code sendOtherCommand(const navigator::drivers::seer::SeerNavigatorFrame& req, uint16_t expectedResType);
 
+            // send Config Command + await ACK
+            std::error_code sendConfigCommand(const navigator::drivers::seer::SeerNavigatorFrame& req, uint16_t expectedResType);
+
+
             // ── JSON helpers ──────────────────────────────────────────────────────────
             static int parseRetCode(const std::string& json);
             static std::string extractTaskId(const std::string& json);
@@ -71,6 +86,7 @@ namespace navigator::drivers::seer {
             std::unique_ptr<ports::ISeerNavigatorConnection> navConn_;      // port 19206 — nav commands
             std::unique_ptr<ports::ISeerNavigatorConnection> controlConn_;  // port 19205 - control port
             std::unique_ptr<ports::ISeerNavigatorConnection> otherConn_;    // port 19210 - other port
+            std::unique_ptr<ports::ISeerNavigatorConnection> configConn_;
 
             SeerNavigatorCommandBuilder cmdBuilder_;
             SeerNavigatorStateMapper stateMapper_;
@@ -92,6 +108,9 @@ namespace navigator::drivers::seer {
 
             // Other command serialisation (Q&A mode)
             std::mutex otherMutex_;
+
+            // Config command serialisation (Q&A mode)
+            std::mutex configMutex_;
 
             std::thread workerThread_;
             std::atomic<bool> running_{false};

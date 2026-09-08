@@ -327,7 +327,9 @@ namespace navigator::drivers::seer {
         const navigator::domain::entities::NavigatorState& next) const
     {
         if (!prev.emergencyStop && next.emergency)
+        {
             return domain::events::NavigatorSetEmergencyEvent{};
+        }
         else if (prev.emergencyStop && !next.emergency) {
             return domain::events::NavigatorClearEmergencyEvent{};
         }
@@ -375,11 +377,11 @@ namespace navigator::drivers::seer {
         {
             if(value < 0) // nam trong next.errors => set error event
             {
-                if(key != "53900")
+                if(key != "52200") // block error
                     events.push_back(domain::events::NavigatorSetErrorEvent{.code = key,.desc=next.errors.at(key)});
             }
             else { // nam trong prev.errors => clear error event
-                if(key != "53900")
+                if(key != "52200") // block error
                 events.push_back(domain::events::NavigatorClearErrorEvent{.code = key});
             }
         }
@@ -445,26 +447,53 @@ namespace navigator::drivers::seer {
         if (auto e = checkTaskStarted(prev, next))
             events.push_back(std::move(*e));
 
-        
-        if (!activeTaskId.empty()) {
-           
-        
-            if (auto e = checkTaskArrived(prev, next, activeTaskId))
-            {
-                activeTaskId.clear();
-                events.push_back(std::move(*e));
-            }
-            else if (auto e = checkTaskFailed(prev,next,activeTaskId))
-            {
-                events.push_back(std::move(*e));
-            }
-            else if (auto e = checkTaskSuspended(prev, next, activeTaskId))
-                events.push_back(std::move(*e));
-            else if (auto e = checkTaskResumed(prev, next, activeTaskId))
-                events.push_back(std::move(*e));
-            else if (auto e = checkTaskCanceled(prev, next, activeTaskId))
-                events.push_back(std::move(*e));
+        if (auto e = checkTaskArrived(prev, next, activeTaskId))
+        {
+            activeTaskId.clear();
+            events.push_back(std::move(*e));
         }
+        else if (auto e = checkTaskFailed(prev,next,activeTaskId))
+        {
+            events.push_back(std::move(*e));
+        }
+        else if (auto e = checkTaskSuspended(prev, next, activeTaskId))
+        {
+            events.push_back(std::move(*e));
+        }
+        else if (auto e = checkTaskResumed(prev, next, activeTaskId))
+        {
+            events.push_back(std::move(*e));
+        }
+        else if (auto e = checkTaskCanceled(prev, next, activeTaskId))
+        {
+            activeTaskId.clear();
+            events.push_back(std::move(*e));
+        }
+        
+        // if (!activeTaskId.empty()) {
+        //     if (auto e = checkTaskArrived(prev, next, activeTaskId))
+        //     {
+        //         activeTaskId.clear();
+        //         events.push_back(std::move(*e));
+        //     }
+        //     else if (auto e = checkTaskFailed(prev,next,activeTaskId))
+        //     {
+        //         events.push_back(std::move(*e));
+        //     }
+        //     else if (auto e = checkTaskSuspended(prev, next, activeTaskId))
+        //     {
+        //         events.push_back(std::move(*e));
+        //     }
+        //     else if (auto e = checkTaskResumed(prev, next, activeTaskId))
+        //     {
+        //         events.push_back(std::move(*e));
+        //     }
+        //     else if (auto e = checkTaskCanceled(prev, next, activeTaskId))
+        //     {
+        //         activeTaskId.clear();
+        //         events.push_back(std::move(*e));
+        //     }
+        // }
 
         return events;
     }
