@@ -1,3 +1,4 @@
+#pragma once
 namespace navigator::domain::value_objects {
     class Velocity {
         public:
