@@ -6,6 +6,7 @@
 #include "../navigator/application/services/NavigatorReconnectService.hpp"
 #include "../navigator/domain/entities/NavigatorState.hpp"
 #include "../navigator/domain/value_objects/station.hpp"
+#include "../navigator/domain/value_objects/velocity.hpp"
 
 #include <functional>
 #include <memory>
@@ -36,6 +37,14 @@ namespace navigator::application::adapter {
 
             std::error_code relocation(const domain::value_objects::Location& location);
             std::error_code confirmLocation();
+
+            std::error_code setShelf(const std::string& shelf_name);
+            std::error_code clearShelf();
+
+            std::error_code switchMap(std::string map_name);
+
+            std::error_code openLoopMotion(navigator::domain::value_objects::Velocity v,uint32_t duration);
+            std::error_code stopOpenLoopMotion();
 
             domain::entities::NavigatorState state() const;
 

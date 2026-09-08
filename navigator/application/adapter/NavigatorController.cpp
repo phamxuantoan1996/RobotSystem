@@ -1,4 +1,7 @@
 #include "NavigatorController.hpp"
+#include "INavigatorRecognition.hpp"
+#include "INavigatorSwitchingMap.hpp"
+#include "INavigatorOpenLoopMotion.hpp"
 #include "NavigatorEvent.hpp"
 #include "INavigatorDriver.hpp"
 #include "../common/application/EventBus.hpp"
@@ -65,6 +68,66 @@ namespace navigator::application::adapter {
     std::error_code NavigatorController::confirmLocation()
     {
         return driver_->confirmRelocation();
+    }
+
+
+    std::error_code NavigatorController::setShelf(const std::string& shelf_name)
+    {
+        // InterfaceB* ptrB = dynamic_cast<InterfaceB*>(ptrA);
+        navigator::ports::INavigatorRecognition* p = dynamic_cast<navigator::ports::INavigatorRecognition*>(driver_.get());
+        if(p != nullptr)
+        {
+            return p->setShelf(shelf_name);
+        }
+        else {
+            return std::make_error_code(std::errc::not_supported); 
+        }
+    }
+    std::error_code NavigatorController::clearShelf()
+    {
+        navigator::ports::INavigatorRecognition* p = dynamic_cast<navigator::ports::INavigatorRecognition*>(driver_.get());
+        if(p != nullptr)
+        {
+            return p->clearShelf();
+        }
+        else {
+            return std::make_error_code(std::errc::not_supported); 
+        }
+    }
+
+    std::error_code NavigatorController::switchMap(std::string map_name)
+    {
+        navigator::ports::INavigatorSwitchingMap* p = dynamic_cast<navigator::ports::INavigatorSwitchingMap*>(driver_.get());
+        if(p != nullptr)
+        {
+            return p->switchMap(map_name);
+        }
+        else {
+            return std::make_error_code(std::errc::not_supported); 
+        }
+    }
+
+    std::error_code NavigatorController::openLoopMotion(navigator::domain::value_objects::Velocity v,uint32_t duration)
+    {
+        navigator::ports::INavigatorOpenLoopMotion* p = dynamic_cast<navigator::ports::INavigatorOpenLoopMotion*>(driver_.get());
+        if(p != nullptr)
+        {
+            return p->openLoopMotion(v, duration);
+        }
+        else {
+            return std::make_error_code(std::errc::not_supported); 
+        }
+    }
+    std::error_code NavigatorController::stopOpenLoopMotion()
+    {
+        navigator::ports::INavigatorOpenLoopMotion* p = dynamic_cast<navigator::ports::INavigatorOpenLoopMotion*>(driver_.get());
+        if(p != nullptr)
+        {
+            return p->stopOpenLoopMotion();
+        }
+        else {
+            return std::make_error_code(std::errc::not_supported); 
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
