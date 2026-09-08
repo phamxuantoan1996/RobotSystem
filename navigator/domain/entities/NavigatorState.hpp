@@ -92,5 +92,7 @@ namespace navigator::domain::entities {
         std::unordered_map<std::string,std::string> fatals; // {"fatal_code":"desc_fatal"}
 
         std::string state_raw;
+
+        std::string ip_address;
     };
 }
