@@ -21,27 +21,27 @@ namespace logger::application::adapter {
                     using T = std::decay_t<decltype(e)>;
                     if constexpr (std::is_same_v<T, robot::domain::events::MissionAcceptedEvent>)
                     {
-                        log(LogLevel::Info, "Robot", "Mission raw : " + e.mission_raw);
+                        log(LogLevel::Info, "Robot", "Mission accepted : " + e.mission_raw);
                     }
                     else if constexpr (std::is_same_v<T, robot::domain::events::MissionRejectedEvent>)
                     {
-                        log(LogLevel::Info, "Robot", "Mission raw : " + e.mission_raw);
+                        log(LogLevel::Info, "Robot", "Mission rejected : " + e.mission_raw);
                     }
                     else if constexpr (std::is_same_v<T, robot::domain::events::MissionRunningEvent>)
                     {
-                        log(LogLevel::Info, "Robot", "Mission running.");
+                        log(LogLevel::Info, "Robot", "Mission running : " + e.mission_id);
                     }
                     else if constexpr (std::is_same_v<T, robot::domain::events::MissionErrorEvent>)
                     {
-                        log(LogLevel::Info, "Robot", "Mission error");
+                        log(LogLevel::Info, "Robot", "Mission error : " + e.mission_id);
                     }
                     else if constexpr (std::is_same_v<T, robot::domain::events::MissionCompletedEvent>)
                     {
-                        log(LogLevel::Info, "Robot", "Mission completed");
+                        log(LogLevel::Info, "Robot", "Mission completed : " + e.mission_id);
                     }
                     else if constexpr (std::is_same_v<T, robot::domain::events::MissionCanceledEvent>)
                     {
-                        log(LogLevel::Info, "Robot", "Mission canceled");
+                        log(LogLevel::Info, "Robot", "Mission canceled : " + e.mission_id);
                     }
                 }, event);
             });
