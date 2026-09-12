@@ -8,6 +8,7 @@ namespace indicator::domain::entities {
         Yellow = 10,
         YellowBlink = 11,
         Red = 8,
-        RedBlink = 9
+        RedBlink = 9,
+        Purple = 15
     };
 }
