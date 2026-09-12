@@ -5,6 +5,7 @@ find_package(jsoncpp REQUIRED)
 
 add_library(board_lib 
     drivers/serial_transport/BoardSerialTransport.cpp
+    drivers/tcp_transport/BoardTcpTransport.cpp
     domain/value_objects/BoardCommandBuilder.cpp
     domain/value_objects/BoardCommandQueue.cpp
     application/adapter/BoardController.cpp
@@ -16,6 +17,7 @@ target_link_libraries(board_lib
 
 target_include_directories(robot_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ports)
 target_include_directories(robot_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/drivers/serial_transport)
+target_include_directories(robot_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/drivers/tcp_transport)
 target_include_directories(robot_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/domain/entities)
 target_include_directories(robot_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/domain/events)
 target_include_directories(robot_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/domain/value_objects)

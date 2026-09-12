@@ -117,7 +117,7 @@ namespace board::drivers::tcp_transport {
 
     std::error_code BoardTcpTransport::reconnect(int delay_ms)
     {
-        
+        return {};
     }
     bool BoardTcpTransport::isConnected() const
     {
