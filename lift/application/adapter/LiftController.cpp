@@ -4,13 +4,13 @@
 #include "../lift/domain/events/LiftEvent.hpp"
 
 #include <chrono>
-#include <cstddef>
 #include <future>
 #include <iostream>
 #include <jsoncpp/json/value.h>
 #include <mutex>
 #include <ostream>
 #include <jsoncpp/json/json.h>
+#include <algorithm>
 
 namespace lift::application::adapter {
     LiftController::LiftController(std::shared_ptr<board::domain::value_objects::BoardCommandQueue> board_command_queue)
@@ -46,6 +46,7 @@ namespace lift::application::adapter {
             if(!future.get())
                 return std::make_error_code(std::errc::timed_out);
         }
+        lift_target = target.getTarget();
         return {};
     }
 
@@ -145,6 +146,35 @@ namespace lift::application::adapter {
 
         boardCommandQueue_->enqueue(board::domain::entities::SystemCommand {
             .system_command_type = board::domain::entities::SystemCommandType::Cancel,
+            .callback = [promise,resolved](bool success){
+                if(resolved->exchange(true))
+                {
+                    return;
+                }
+                promise->set_value(success);
+            }
+        });
+
+        auto status = future.wait_for(std::chrono::seconds(5));
+        if(status != std::future_status::ready)
+        {
+            return std::make_error_code(std::errc::timed_out);
+        }
+        else {
+            if(!future.get())
+                return std::make_error_code(std::errc::timed_out);
+        }
+        return {};
+    }
+
+    std::error_code LiftController::clearError()
+    {
+        auto promise = std::make_shared<std::promise<bool>>();
+        auto future = promise->get_future();
+        auto resolved = std::make_shared<std::atomic<bool>>();
+
+        boardCommandQueue_->enqueue(board::domain::entities::SystemCommand {
+            .system_command_type = board::domain::entities::SystemCommandType::ClearError,
             .callback = [promise,resolved](bool success){
                 if(resolved->exchange(true))
                 {
@@ -283,10 +313,12 @@ namespace lift::application::adapter {
 
         if (prev.device_status != lift::domain::entities::LiftDeviceStatusCode::Emergency && next.device_status == lift::domain::entities::LiftDeviceStatusCode::Emergency) 
         {
+            
             liftEventBus_->publish(lift::domain::events::LiftStatusSetEmergencyEvent{});
         }
         else if(prev.device_status == lift::domain::entities::LiftDeviceStatusCode::Emergency && next.device_status != lift::domain::entities::LiftDeviceStatusCode::Emergency)
         {
+            
             liftEventBus_->publish(lift::domain::events::LiftStatusClearEmergencyEvent{});
         }
 
@@ -311,19 +343,21 @@ namespace lift::application::adapter {
         {
             liftEventBus_->publish(lift::domain::events::LiftTaskRunningEvent{});
         }
-        else if (prev.task_status != lift::domain::entities::LiftTaskStatusCode::Completed && next.task_status == lift::domain::entities::LiftTaskStatusCode::Completed) 
+        else if ((prev.task_status != lift::domain::entities::LiftTaskStatusCode::Completed && next.task_status == lift::domain::entities::LiftTaskStatusCode::Completed) || (lift_target == next.lift_position)) 
         {
-            std::cout << "list task completed\n";
+            // std::cout << "list task completed\n";
+            lift_target = -1;
             liftEventBus_->publish(lift::domain::events::LiftTaskCompletedEvent{});
         }
         else if (prev.task_status != lift::domain::entities::LiftTaskStatusCode::Canceled && next.task_status == lift::domain::entities::LiftTaskStatusCode::Canceled) 
         {
-            std::cout << "list task canceled\n";
+            // std::cout << "list task canceled\n";
+            lift_target = -1;
             liftEventBus_->publish(lift::domain::events::LiftTaskCanceledEvent{});
         }
         else if (prev.task_status != lift::domain::entities::LiftTaskStatusCode::Paused && next.task_status == lift::domain::entities::LiftTaskStatusCode::Paused) 
         {
-            std::cout << "list task paused\n";
+            // std::cout << "list task paused\n";
             liftEventBus_->publish(lift::domain::events::LiftTaskPausedEvent{});
         }
         // error event

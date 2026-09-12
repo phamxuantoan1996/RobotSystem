@@ -6,10 +6,10 @@
 #include "../lift/domain/value_objects/LiftTarget.hpp"
 #include "../common/ports/IEventBus.hpp"
 #include "../common/application/EventBus.hpp"
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <system_error>
-#include <algorithm>
 
 namespace lift::application::adapter {
     class LiftController {
@@ -24,6 +24,7 @@ namespace lift::application::adapter {
             std::error_code pause();
             std::error_code resume();
             std::error_code cancel();
+            std::error_code clearError();
 
             lift::domain::entities::LiftState getState(void) const;
 
@@ -44,6 +45,8 @@ namespace lift::application::adapter {
 
             lift::domain::entities::LiftState cacheState_;
             lift::domain::entities::LiftState prevSnapshot_;
+
+            int16_t lift_target = -1;
 
             mutable std::mutex mutexState_;
     };
