@@ -21,7 +21,7 @@ namespace board::domain::value_objects {
         Json::StreamWriterBuilder builder;
         builder["indentation"] = "";  // Nếu muốn JSON không xuống dòng
         command_str = Json::writeString(builder, root);
-
+        command_str = command_str + '\n';
         return command_str;
     }
 
@@ -39,6 +39,7 @@ namespace board::domain::value_objects {
         Json::StreamWriterBuilder builder;
         builder["indentation"] = "";  // Nếu muốn JSON không xuống dòng
         command_str = Json::writeString(builder, root);
+        command_str = command_str + '\n';
         return command_str;
     }
 
@@ -56,6 +57,7 @@ namespace board::domain::value_objects {
         Json::StreamWriterBuilder builder;
         builder["indentation"] = "";  // Nếu muốn JSON không xuống dòng
         command_str = Json::writeString(builder, root);
+        command_str = command_str + '\n';
         return command_str;
     }
 

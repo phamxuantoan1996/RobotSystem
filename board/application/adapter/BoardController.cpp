@@ -83,7 +83,7 @@ namespace board::application::adapter {
                             if(!ec)
                             {
                                 std::string res = "";
-                                ec = driver_->readUntil(res,'/',BOARD_POLL_STATE_TIMEOUT);
+                                ec = driver_->readUntil(res,'\n',BOARD_POLL_STATE_TIMEOUT);
                                 if(!ec)
                                 {
                                     success = true;
@@ -106,7 +106,7 @@ namespace board::application::adapter {
                             if(!ec)
                             {
                                 std::string res = "";
-                                ec = driver_->readUntil(res,'/',BOARD_POLL_STATE_TIMEOUT);
+                                ec = driver_->readUntil(res,'\n',BOARD_POLL_STATE_TIMEOUT);
                                 if(!ec)
                                 {
                                     success = true;
@@ -129,7 +129,7 @@ namespace board::application::adapter {
                             if(!ec)
                             {
                                 std::string res = "";
-                                ec = driver_->readUntil(res,'/',BOARD_POLL_STATE_TIMEOUT);
+                                ec = driver_->readUntil(res,'\n',BOARD_POLL_STATE_TIMEOUT);
                                 if(!ec)
                                 {
                                     success = true;
@@ -160,7 +160,7 @@ namespace board::application::adapter {
                     continue;
                 }
                 std::string res = "";
-                ec = driver_->readUntil(res,'/',BOARD_POLL_STATE_TIMEOUT);
+                ec = driver_->readUntil(res,'\n',BOARD_POLL_STATE_TIMEOUT);
                 // std::cout << "res : " << res << std::endl;
                 if(ec)
                 {

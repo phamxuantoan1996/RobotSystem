@@ -62,14 +62,17 @@ namespace board::drivers::serial_transport {
     }
 
     std::error_code BoardSerialTransport::connect() {
-        std::lock_guard<std::mutex> lock(portMutex_);
+        
         
         // Disconnect if already connected
-        if (serialFd_ != -1) 
         {
-            ::close(serialFd_);
-            serialFd_ = -1;
+            std::lock_guard<std::mutex> lock(portMutex_);
             connected_ = false;
+            if (serialFd_ != -1) 
+            {
+                ::close(serialFd_);
+                serialFd_ = -1;
+            }
         }
         
         // Open serial port
