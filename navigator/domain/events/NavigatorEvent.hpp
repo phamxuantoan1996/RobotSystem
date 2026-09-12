@@ -41,6 +41,8 @@ namespace navigator::domain::events {
     struct NavigatorTaskSetFailedEvent {};
     struct NavigatorTaskClearFailedEvent {};
     struct NavigatorRelocationConfirmEvent {};
+    struct NavigatorChargeEvent {};
+    struct NavigatorDischargeEvent {};
 
     using NavigatorEvent = std::variant<
         NavigatorDisconnectEvent,
@@ -60,7 +62,9 @@ namespace navigator::domain::events {
         NavigatorTaskClearFailedEvent,
         NavigatorTaskResumedEvent,
         NavigatorRelocationConfirmEvent,
-        NavigatorTaskStartedEvent
+        NavigatorTaskStartedEvent,
+        NavigatorChargeEvent,
+        NavigatorDischargeEvent
     >;
 
 
