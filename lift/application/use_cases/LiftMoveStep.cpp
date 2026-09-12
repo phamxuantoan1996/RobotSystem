@@ -35,8 +35,16 @@ namespace lift::application::use_cases {
                 }
             },event);
         });
-        auto ec = liftController_->liftMove(target_);
-        if(ec)
+        int try_count = 0;
+        for(; try_count < 3; try_count++)
+        {
+            auto ec = liftController_->liftMove(target_);
+            if(!ec)
+            {
+                break;
+            }
+        }
+        if(try_count == 3)
         {
             return common::ports::LiftMoveStepResult{.result = common::ports::LiftMoveStepResult::Result::Failed};
         }
