@@ -6,14 +6,20 @@
 #include "../robot/domain/value_objects/MissionParser.hpp"
 #include "../robot/application/orchestrator/Orchestrator.hpp"
 #include "../robot/domain/entities/RobotStatus.hpp"
-#include "../robot/domain/entities/RobotTask.hpp"
 #include "../lift/application/adapter/LiftController.hpp"
 #include "../board/application/adapter/BoardController.hpp"
 #include "../robot/domain/entities/MissionStatus.hpp"
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <optional>
+#include <queue>
+#include <string>
 #include <thread>
+#include <variant>
+
+#define POST_TO_FLEET 0
+
 namespace robot::application {
     
     struct  RobotSystemError {
@@ -36,6 +42,23 @@ namespace robot::application {
 
         bool board_error = false;
     };
+
+
+    struct MissionStatusResponse {
+        std::string mission_id;
+        robot::domain::entities::MissionStatusCode mission_status;
+    };
+
+    struct ErrorResponse {
+        int error_code;
+        std::string error_desc;
+    };
+
+    using RobotResponse = std::variant<
+        MissionStatusResponse,
+        ErrorResponse,
+        std::monostate>;
+
     class RobotController {
         public:
             RobotController(std::shared_ptr<board::application::adapter::BoardController> boardController,
@@ -52,6 +75,11 @@ namespace robot::application {
             void start();
             void stop();
         private:
+            std::string parseRobotState();
+
+            void pushMissionStatusResponse(std::string mission_id,robot::domain::entities::MissionStatusCode mission_status);
+            void pushErrorResponse(int error_code, std::string error_desc);
+            std::optional<RobotResponse> popRobotResponse();
             
 
             std::shared_ptr<board::application::adapter::BoardController> boardController_;
@@ -64,11 +92,14 @@ namespace robot::application {
             std::unique_ptr<robot::application::Orchestrator> orchestrator_;
 
             std::mutex mutexState_;
-            robot::domain::entities::RobotStatusCode robotStatus_ = robot::domain::entities::RobotStatusCode::Exception;
+            robot::domain::entities::RobotStatusCode robotStatus_ = robot::domain::entities::RobotStatusCode::Idle;
             robot::domain::entities::RobotOperationMode operationMode_ = robot::domain::entities::RobotOperationMode::Manual;
             robot::domain::entities::MissionStatusCode missionStatus_ = robot::domain::entities::MissionStatusCode::Unknown;
 
             RobotSystemError systemError_;    
+            
+            std::queue<RobotResponse> robotResponseQueue_;
+            std::mutex mutexResponseQueue_;
             
             void updateRobotStatus(void);
             std::atomic<bool> running_;

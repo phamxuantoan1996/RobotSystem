@@ -25,7 +25,7 @@ namespace  robot::domain::events {
     struct MissionCompletedEvent {
         std::string mission_id;
     };
-
+    struct RobotClearErrorEvent {};
     
 
     using RobotEvent = std::variant<
@@ -34,6 +34,7 @@ namespace  robot::domain::events {
         MissionRunningEvent,
         MissionErrorEvent,
         MissionCanceledEvent,
-        MissionCompletedEvent
+        MissionCompletedEvent,
+        RobotClearErrorEvent
     >;
 }

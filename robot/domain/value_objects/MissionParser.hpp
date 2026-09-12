@@ -11,7 +11,7 @@ namespace robot::domain::value_objects {
         public:
             MissionParser(std::shared_ptr<navigator::application::adapter::NavigatorController> navigatorController,
                 std::shared_ptr<lift::application::adapter::LiftController> liftController);
-            std::optional<robot::domain::entities::RobotTask> parser(std::string mission_raw);
+            std::optional<robot::domain::entities::RobotTask> parser(std::string mission_raw,robot::domain::entities::RobotOperationMode operator_mode);
 
         private:
             std::shared_ptr<navigator::application::adapter::NavigatorController> navigatorController_;

@@ -45,7 +45,7 @@ namespace robot::application {
 
                 std::string missionIdCurrent_ = "";
                 robot::domain::entities::RobotTaskStatus taskStatus_ = robot::domain::entities::RobotTaskStatus::Unknown;
-                std::atomic<int> stepIndex_{1};
+                std::atomic<int> stepIndex_{-1};
                 common::ports::IRobotStep* currentRunningStep_{nullptr}; 
                 mutable std::mutex mutexState_;
 
