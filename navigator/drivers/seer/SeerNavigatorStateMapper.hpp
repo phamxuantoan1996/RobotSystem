@@ -5,7 +5,6 @@
 #include <vector>
 #include <optional>
 #include <string>
-#include <cmath>
 
 namespace navigator::drivers::seer {
     struct PrevSnapshot {
@@ -13,6 +12,7 @@ namespace navigator::drivers::seer {
         bool blocked = false;
         bool emergencyStop = false;
         bool isStopped = false;
+        navigator::domain::entities::NavigatorChargeState charge = navigator::domain::entities::NavigatorChargeState::Unplugged;
         std::string targetId = "";
         navigator::domain::entities::NavigatorRelocationState relocState = navigator::domain::entities::NavigatorRelocationState::Unknown;
         std::unordered_map<std::string,std::string> errors;
@@ -85,5 +85,7 @@ namespace navigator::drivers::seer {
             std::optional<std::vector<navigator::domain::events::NavigatorEvent>> checkFatals(const PrevSnapshot& prev, const navigator::domain::entities::NavigatorState& next) const;
 
             std::optional<navigator::domain::events::NavigatorEvent> checkTaskStarted(const PrevSnapshot& prev, const navigator::domain::entities::NavigatorState& next) const;
+
+            std::optional<navigator::domain::events::NavigatorEvent> checkIsCharge(const PrevSnapshot& prev, const navigator::domain::entities::NavigatorState& next) const;
     };
 }

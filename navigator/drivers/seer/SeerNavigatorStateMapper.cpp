@@ -1,10 +1,13 @@
 #include "SeerNavigatorStateMapper.hpp"
+#include "NavigatorEvent.hpp"
 #include "NavigatorState.hpp"
 #include <iostream>
 #include <optional>
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <cmath>
+
 namespace navigator::drivers::seer {
     navigator::domain::entities::NavigatorState SeerNavigatorStateMapper::toNavigationState(const SeerStatusAll1& raw) const
     {
@@ -70,6 +73,7 @@ namespace navigator::drivers::seer {
             .blocked       = state.blocked.detected,
             .emergencyStop = state.emergency,
             .isStopped = state.isStopped,
+            .charge = state.battery.charge,
             .targetId      = state.targetId,
             .relocState = state.locStatus,
             .errors = state.errors,
@@ -425,6 +429,19 @@ namespace navigator::drivers::seer {
         return std::nullopt;
     }
 
+    std::optional<navigator::domain::events::NavigatorEvent> SeerNavigatorStateMapper::checkIsCharge(const PrevSnapshot& prev, const navigator::domain::entities::NavigatorState& next) const
+    {
+        if(prev.charge != navigator::domain::entities::NavigatorChargeState::Charging && next.battery.charge == navigator::domain::entities::NavigatorChargeState::Charging)
+        {
+            return navigator::domain::events::NavigatorChargeEvent{};
+        }
+        else if(prev.charge == navigator::domain::entities::NavigatorChargeState::Charging && next.battery.charge != navigator::domain::entities::NavigatorChargeState::Charging)
+        {
+            return navigator::domain::events::NavigatorDischargeEvent{};
+        }
+        return std::nullopt;
+    }
+
     std::vector<domain::events::NavigatorEvent> SeerNavigatorStateMapper::detectEvents(const PrevSnapshot& prev, const navigator::domain::entities::NavigatorState& next, std::string& activeTaskId) const
     {
         std::vector<domain::events::NavigatorEvent> events;
@@ -443,6 +460,11 @@ namespace navigator::drivers::seer {
         
         if (auto e = checkFatals(prev,next))
             events.insert(events.end(), e.value().begin(), e.value().end());
+
+        if (auto e = checkIsCharge(prev,next))
+        {
+            events.push_back(std::move(*e));
+        }
 
         if (auto e = checkTaskStarted(prev, next))
             events.push_back(std::move(*e));
@@ -496,6 +518,5 @@ namespace navigator::drivers::seer {
         // }
 
         return events;
-    }
-        
+    }    
 }
