@@ -17,7 +17,8 @@ namespace board::domain::entities {
         Pause,
         Resume,
         Cancel,
-        Init
+        Init,
+        ClearError
     };
 
     enum class LiftCommandType {
