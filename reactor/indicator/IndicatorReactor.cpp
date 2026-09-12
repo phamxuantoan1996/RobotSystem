@@ -1,6 +1,7 @@
 #include "../reactor/indicator/IndicatorReactor.hpp"
 #include "../indicator/domain/entities/ColorType.hpp"
 #include <iostream>
+#include <mutex>
 #include <thread>
 #include <variant>
 
@@ -53,7 +54,6 @@ namespace reactor {
             {
                 {
                     std::lock_guard<std::mutex> lk(mutexState_);
-                    // indicatorSystemState_.nav_disconnected = true;
                     indicatorReactorState_.navigator_disconnected = true;
                 }
                 updateLight();
@@ -63,7 +63,6 @@ namespace reactor {
             {
                 {
                     std::lock_guard<std::mutex> lk(mutexState_);
-                    // indicatorSystemState_.nav_disconnected = false;
                     indicatorReactorState_.navigator_disconnected = false;
                 }
                 updateLight();
@@ -164,6 +163,22 @@ namespace reactor {
                 }
                 updateLight();
             }
+            else if constexpr (std::is_same_v<T, navigator::domain::events::NavigatorChargeEvent>)
+            {
+                {
+                    std::lock_guard<std::mutex> lk(mutexState_);
+                    indicatorReactorState_.is_charge = true;
+                }
+                updateLight();
+            }
+            else if constexpr (std::is_same_v<T, navigator::domain::events::NavigatorDischargeEvent>)
+            {
+                {
+                    std::lock_guard<std::mutex> lk(mutexState_);
+                    indicatorReactorState_.is_charge = false;
+                }
+                updateLight();
+            }
             
         },e);
     }
@@ -197,6 +212,18 @@ namespace reactor {
                 {
                     std::lock_guard<std::mutex> lk(mutexState_);
                     indicatorReactorState_.mission_running = false;
+                    indicatorReactorState_.mission_error = true;
+                }
+                updateLight();
+            }
+            else if constexpr (std::is_same_v<T, robot::domain::events::RobotClearErrorEvent>)
+            {
+                {
+                    std::lock_guard<std::mutex> lk(mutexState_);
+                    indicatorReactorState_.mission_error = false;
+                    indicatorReactorState_.navigator_error = false;
+                    indicatorReactorState_.navigator_failed = false;
+                    indicatorReactorState_.navigator_fatal = false;
                 }
                 updateLight();
             }
@@ -300,18 +327,28 @@ namespace reactor {
         {
             newColor = indicator::domain::entities::ColorType::RedBlink;
         }
-        else if(stateSnapshot.lift_error || stateSnapshot.navigator_blocked || stateSnapshot.navigator_disconnected || stateSnapshot.navigator_failed || stateSnapshot.navigator_fatal || stateSnapshot.navigator_error || stateSnapshot.board_error)
+        else if(stateSnapshot.lift_error || stateSnapshot.navigator_blocked || stateSnapshot.navigator_disconnected 
+            || stateSnapshot.navigator_failed || stateSnapshot.navigator_fatal || stateSnapshot.navigator_error 
+            || stateSnapshot.board_error || stateSnapshot.mission_error)
         {
             newColor = indicator::domain::entities::ColorType::Red;
         }
-        else if (stateSnapshot.lift_task_running || stateSnapshot.mission_running)
+        else if (stateSnapshot.navigator_task_running)
         {
             /* code */
-            newColor = indicator::domain::entities::ColorType::Green;
+            newColor = indicator::domain::entities::ColorType::GreenBlink;
+        }
+        else if (stateSnapshot.lift_task_running)
+        {
+            newColor = indicator::domain::entities::ColorType::YellowBlink;
+        }
+        else if(stateSnapshot.is_charge)
+        {
+            newColor = indicator::domain::entities::ColorType::Purple;
         }
         else
         {
-            newColor = indicator::domain::entities::ColorType::Yellow;
+            newColor = indicator::domain::entities::ColorType::Green;
         }
 
         if(newColor == currentColor_)
@@ -342,6 +379,11 @@ namespace reactor {
                 break;
             }
             case indicator::domain::entities::ColorType::GreenBlink:
+            {
+                std::cout << "blink green led\n";
+                break;
+            }
+            case indicator::domain::entities::ColorType::Purple:
             {
                 std::cout << "blink green led\n";
                 break;
@@ -379,6 +421,7 @@ namespace reactor {
         }
         running_ = true;
         workerThread_ = std::thread(&IndicatorReactor::workerLoop,this);
+        updateLight();
     }
 
     void IndicatorReactor::workerLoop(void)

@@ -8,7 +8,6 @@
 #include "../indicator/domain/entities/ColorType.hpp"
 #include <atomic>
 #include <condition_variable>
-#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -34,6 +33,8 @@ namespace reactor {
 
         bool mission_running = false;
         bool mission_error = false;
+
+        bool is_charge = false;
     };
     class IndicatorReactor {
         public:
@@ -46,7 +47,6 @@ namespace reactor {
             ~IndicatorReactor();
             
             void start(void);
-
             
 
         private:
