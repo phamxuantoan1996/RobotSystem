@@ -5,6 +5,7 @@
 #include <atomic>
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <thread>
 namespace gateway::drivers::rest {
     class RestGateway : public ports::IRobotGateway {
@@ -32,6 +33,11 @@ namespace gateway::drivers::rest {
             void setGatewayGetRobotCallback(GatewayGetRobotStateCallback cb) override;
 
         private:
+            static constexpr std::string_view post_robot_status_endpoint = "/robot_status";
+            static constexpr std::string_view post_mission_status_endpoint = "/mission_status";
+            static constexpr std::string_view post_robot_error_endpoint = "/robot_error";
+            
+
             std::string fleetUrl_;
             uint16_t port_;
             std::atomic<bool> running_{false};
@@ -39,7 +45,7 @@ namespace gateway::drivers::rest {
             GatewayEventCallback eventCallback_;
             GatewayGetRobotStateCallback getRobotStatusCallback_;
             
-            std::atomic<gateway::domain::entities::CollisionSignalType> signal_type{gateway::domain::entities::CollisionSignalType::Exception};
+            std::atomic<gateway::domain::entities::CollisionSignalType> collision_type{gateway::domain::entities::CollisionSignalType::Exception};
             std::atomic<gateway::domain::entities::TransferSignalType> transfer_type{gateway::domain::entities::TransferSignalType::Unknown};
 
             void drogonServerThread();

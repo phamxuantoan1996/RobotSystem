@@ -5,7 +5,8 @@ namespace gateway::domain::entities {
         Success,       // Gửi thành công, Fleet nhận tốt
         ConnectionError, // Mất mạng, không kết nối được Server/Broker
         Timeout,       // Server không phản hồi kịp thời
-        ServerError    // Kết nối được nhưng Server trả về lỗi (Ví dụ: HTTP 500, 400)
+        ServerError,    // Kết nối được nhưng Server trả về lỗi (Ví dụ: HTTP 500, 400)
+        PayloadError
     };
 
     struct NetworkResult {

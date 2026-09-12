@@ -1,12 +1,13 @@
 #pragma once
 namespace gateway::domain::entities {
-    enum CollisionSignalType {
+    enum class CollisionSignalType {
+        Unknown,
         Exception,
         Run, 
         Stop
     };
 
-    enum TransferSignalType {
+    enum class TransferSignalType {
         Unknown,
         RequestTransfer,
         AcceptTransfer,

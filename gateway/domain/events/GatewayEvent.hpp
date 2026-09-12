@@ -14,7 +14,7 @@ namespace gateway::domain::events {
     struct SignalClearErrorEvent {};
     struct SignalSwitchModeEvent 
     {
-        
+        std::string mode;
     };
     struct SignalClearComodityEvent {};
     struct SignalCollisionEvent {
@@ -30,6 +30,16 @@ namespace gateway::domain::events {
         gateway::domain::entities::TransferSignalType transfer_type;
     };
 
+    struct SwitchMapEvent {
+        std::string map_name;
+    };
+
+    struct SetShelfEvent {
+        std::string shelf_name;
+    };
+
+    struct ClearShelfEvent {};
+
     using GatewayEvent = std::variant<
         MissionDispatchEvent,
         SignalCancelEvent,
@@ -40,6 +50,9 @@ namespace gateway::domain::events {
         SignalClearComodityEvent,
         SignalCollisionEvent,
         ControlManualEvent,
-        SignalTransferEvent
+        SignalTransferEvent,
+        SwitchMapEvent,
+        SetShelfEvent,
+        ClearShelfEvent
     >;
 }
