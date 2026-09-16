@@ -2,6 +2,7 @@
 #include "RobotStatus.hpp"
 #include "../navigator/application/use_cases/GoToStationStep.hpp"
 #include "../navigator/application/use_cases/GoToStationShelfStep.hpp"
+#include "../navigator/application/use_cases/WaitStep.hpp"
 #include "../navigator/domain/value_objects/station.hpp"
 
 #include "../lift/application/use_cases/LiftMoveStep.hpp"
@@ -144,6 +145,31 @@ namespace robot::domain::value_objects {
                             mission_code = "";
                             break;
                         }
+                    }
+                    else if (action_name == "action_wait")
+                    {
+                        /*
+                        {
+                            "name":"action_wait",
+                            "params": {
+                                "target": 0
+                            }
+                        }
+                        */
+                        if(!action.isMember("params") && !action["params"].isObject())
+                        {
+                            mission_code = "";
+                            break;
+                        }
+                        const Json::Value&  params = action["params"];
+                        if(!params.isMember("target") || !params["target"].isInt())
+                        {
+                            mission_code = "";
+                            break;
+                        }
+                        uint32_t wait_time = params["target"].asInt();
+                        auto step = std::make_unique<navigator::application::use_cases::WaitStep>(wait_time,action_index);
+                        steps.push_back(std::move(step));
                     }
                     else {
                         mission_code = "";

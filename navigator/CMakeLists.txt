@@ -17,6 +17,7 @@ add_library(navigator_lib
     application/services/NavigatorReconnectService.cpp
     application/use_cases/GoToStationStep.cpp
     application/use_cases/GoToStationShelfStep.cpp
+    application/use_cases/WaitStep.cpp
 )
 
 # LIÊN KẾT ĐẾN COMMON:
