@@ -1,6 +1,6 @@
 #include "../gateway/drivers/modbus_tcp/ModbusTcpGateway.hpp"
 #include "GatewayEvent.hpp"
-#include "jsoncpp/json/json.h"
+#include <jsoncpp/json/json.h>
 #include <charconv>
 #include <cstdint>
 #include <iostream>
@@ -361,9 +361,9 @@ namespace gateway::drivers::modbus_tcp {
 
                 if(mbMapping_->tab_bits[static_cast<int>(CoilAddress::Start)] == 1 && signalControlCache_.start == 0)
                 {
-                    uint16_t mission_id = mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TaskId)];
-                    uint16_t mission_type = mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TaskType)];
-                    uint16_t target = mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::Target)];
+                    uint16_t mission_id = mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TaskIdReq)];
+                    uint16_t mission_type = mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TaskTypeReq)];
+                    uint16_t target = mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TargetReq)];
                     if(mission_id != 0)
                     {
                         std::string mission_gen = "";
@@ -425,6 +425,11 @@ namespace gateway::drivers::modbus_tcp {
                                     ]
                                 }
                                 */
+                                if(target != 1 && target != 2)
+                                {
+                                    break;
+                                }
+                                target = target - 1;
                                 Json::Value root;
                                 root["mission_id"] = std::to_string(mission_id);
                                 root["activity_type"] = 0;
@@ -464,9 +469,9 @@ namespace gateway::drivers::modbus_tcp {
                         }
                         
                     }
-                    mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TaskType)] = 0;
-                    mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::Target)] = 0;
-                    mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TaskId)] = 0;
+                    mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TaskTypeReq)] = 0;
+                    mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TargetReq)] = 0;
+                    mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TaskIdReq)] = 0;
                 }
                 else if (mbMapping_->tab_bits[static_cast<int>(CoilAddress::Start)] == 0 && signalControlCache_.start == 1)
                 {
@@ -510,7 +515,7 @@ namespace gateway::drivers::modbus_tcp {
                     std::string shelf_name = std::to_string(mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::ShelfId)]);
                     if(eventCallback_)
                     {
-                        eventCallback_(gateway::domain::events::SetShelfEvent{.shelf_name = shelf_name});
+                        eventCallback_(gateway::domain::events::SetShelfEvent{.shelf_name = "shelf/" + shelf_name + ".shelf"});
                     }
                     mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::ShelfId)] = 0;
                 }
@@ -531,9 +536,47 @@ namespace gateway::drivers::modbus_tcp {
                 {
                     signalControlCache_.clear_shelf = 0;
                 }
+
+                // relocation
+                if(mbMapping_->tab_bits[static_cast<int>(CoilAddress::Relocation)] == 1 && signalControlCache_.clear_shelf == 0)
+                {
+                    signalControlCache_.relocation = 1;
+                    if(eventCallback_)
+                    {
+                        float x = 0;
+                        float y = 0;
+                        float angle = 0;
+
+                        uint32_t combinedX = ((uint32_t)mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::CoordinateX)] << 16) | mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::CoordinateX) + 1];
+                        std::memcpy(&x, &combinedX, sizeof(x));
+
+                        uint32_t combinedY = ((uint32_t)mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::CoordinateY)] << 16) | mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::CoordinateY) + 1];
+                        std::memcpy(&y, &combinedY, sizeof(y));
+
+                        uint32_t combinedAngular = ((uint32_t)mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::CoordinateAngular)] << 16) | mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::CoordinateAngular) + 1];
+                        std::memcpy(&angle, &combinedAngular, sizeof(angle));
+
+                        eventCallback_(gateway::domain::events::RelocationEvent{.x = x, .y = y, .angle = angle});
+                        mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::CoordinateX)] = 0;
+                        mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::CoordinateX) + 1] = 0;
+                        mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::CoordinateY)] = 0;
+                        mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::CoordinateY) + 1] = 0;
+                        mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::CoordinateAngular)] = 0;
+                        mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::CoordinateAngular) + 1] = 0;
+                    }
+                }
+                else if(mbMapping_->tab_bits[static_cast<int>(CoilAddress::Relocation)] == 0 && signalControlCache_.clear_shelf == 1)
+                {
+                    signalControlCache_.relocation = 0;
+                }
+
+
             }
 
             // update robot state
+            mbMapping_->tab_input_registers[static_cast<int>(InputRegisterAddress::TargetRes)] = mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TargetReq)];
+            mbMapping_->tab_input_registers[static_cast<int>(InputRegisterAddress::TaskIdRes)] = mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TaskIdReq)];
+            mbMapping_->tab_input_registers[static_cast<int>(InputRegisterAddress::TaskTypeRes)] = mbMapping_->tab_registers[static_cast<int>(HoldingRegisterAddress::TaskTypeReq)];
             if(getRobotStatusCallback_)
             {
                 std::string robot_state_raw = getRobotStatusCallback_();

@@ -24,9 +24,9 @@ namespace gateway::drivers::modbus_tcp {
         VelocityW = 14,
         Duration = 16,
         // Task params
-        TaskType = 20,
-        TaskId = 21,
-        Target = 22
+        TaskTypeReq = 20,
+        TaskIdReq = 21,
+        TargetReq = 22
     };
 
     enum class CoilAddress {
@@ -38,7 +38,8 @@ namespace gateway::drivers::modbus_tcp {
         SwitchMap = 6,
         SetShelf = 7,
         ClearShelf = 8,
-        OpenLoopMotion = 9
+        OpenLoopMotion = 9,
+        Relocation = 10
     };
 
     enum class InputRegisterAddress {
@@ -80,7 +81,10 @@ namespace gateway::drivers::modbus_tcp {
         ShelfId = 37,
 
         //
-        NavigatorIp = 40
+        NavigatorIp = 40,
+        TaskTypeRes = 44,
+        TaskIdRes = 45,
+        TargetRes = 46
     };
 
     enum class DiscreteInputAddress {
@@ -98,6 +102,7 @@ namespace gateway::drivers::modbus_tcp {
         uint8_t set_shelf = 0;
         uint8_t clear_shelf = 0;
         uint8_t clear_error = 0;
+        uint8_t relocation = 0;
     }; 
 
 
@@ -145,8 +150,8 @@ namespace gateway::drivers::modbus_tcp {
 
             static constexpr int NUM_OF_HOLDING_REGS = 30;
             static constexpr int NUM_OF_INPUT_REGS = 50;
-            static constexpr int NUM_OF_COILS = 10;
-            static constexpr int NUM_OF_DECRETE_INPUT = 10;
+            static constexpr int NUM_OF_COILS = 20;
+            static constexpr int NUM_OF_DECRETE_INPUT = 20;
 
             bool isSocketAlive(int sock);
             void clientHandler(int client_socket);
