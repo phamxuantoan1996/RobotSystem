@@ -178,6 +178,18 @@ namespace robot::application {
                         navigatorController_->clearShelf();
                     }
                 }
+                else if constexpr (std::is_same_v<T, gateway::domain::events::RelocationEvent>) 
+                {
+                    robot::domain::entities::RobotStatusCode temp;
+                    {
+                        std::lock_guard<std::mutex> lk(mutexState_);
+                        temp = robotStatus_;
+                    }
+                    if(temp == robot::domain::entities::RobotStatusCode::Idle)
+                    {
+                        navigatorController_->relocation(navigator::domain::value_objects::Location(e.x,e.y,e.angle));
+                    }
+                }
             },event);
         });
 
