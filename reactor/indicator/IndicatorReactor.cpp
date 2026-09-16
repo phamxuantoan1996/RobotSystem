@@ -323,15 +323,18 @@ namespace reactor {
         }
         indicator::domain::entities::ColorType newColor = indicator::domain::entities::ColorType::Off;
 
-        if(stateSnapshot.navigator_emergency || stateSnapshot.lift_emergency)
-        {
-            newColor = indicator::domain::entities::ColorType::RedBlink;
-        }
-        else if(stateSnapshot.lift_error || stateSnapshot.navigator_blocked || stateSnapshot.navigator_disconnected 
-            || stateSnapshot.navigator_failed || stateSnapshot.navigator_fatal || stateSnapshot.navigator_error 
-            || stateSnapshot.board_error || stateSnapshot.mission_error)
+        
+        if(stateSnapshot.lift_error || stateSnapshot.navigator_disconnected 
+            || stateSnapshot.navigator_failed || stateSnapshot.navigator_fatal 
+            || stateSnapshot.navigator_error || stateSnapshot.board_error 
+            || stateSnapshot.mission_error || stateSnapshot.navigator_emergency 
+            || stateSnapshot.lift_emergency)
         {
             newColor = indicator::domain::entities::ColorType::Red;
+        }
+        else if(stateSnapshot.navigator_blocked)
+        {
+            newColor = indicator::domain::entities::ColorType::RedBlink;
         }
         else if (stateSnapshot.navigator_task_running)
         {
@@ -448,11 +451,16 @@ namespace reactor {
                 color = std::move(colorQueue_.front());
                 colorQueue_.pop();
             }
-            auto ec = indicatorController_->setColor(color);
-            if(ec)
+            int try_count = 0;
+            for(;try_count < 3;try_count ++)
             {
-                
+                auto ec = indicatorController_->setColor(color);
+                if(!ec)
+                {
+                    break;    
+                }
             }
+            
         }
     }
 }
