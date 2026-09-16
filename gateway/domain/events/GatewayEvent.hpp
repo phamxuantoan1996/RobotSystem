@@ -40,6 +40,12 @@ namespace gateway::domain::events {
 
     struct ClearShelfEvent {};
 
+    struct RelocationEvent {
+        float x;
+        float y;
+        float angle;
+    };
+
     using GatewayEvent = std::variant<
         MissionDispatchEvent,
         SignalCancelEvent,
@@ -53,6 +59,7 @@ namespace gateway::domain::events {
         SignalTransferEvent,
         SwitchMapEvent,
         SetShelfEvent,
-        ClearShelfEvent
+        ClearShelfEvent,
+        RelocationEvent
     >;
 }
