@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 namespace board::drivers::tcp_transport {
-
     std::error_code BoardTcpTransport::connect()
     {
         // 1. Đảm bảo reset cờ trạng thái trước khi thực hiện kết nối mới
@@ -25,17 +24,19 @@ namespace board::drivers::tcp_transport {
         if (local_fd < 0) {
             return std::make_error_code(std::errc::network_unreachable);
         }
-
-        // 2. TCP Options (Sửa lại cấu hình KeepAlive hợp lý cho Arduino)
+        
+        // 2. TCP Options
         int keepalive_on = 1;
-        int keepidle_time = 10;  // 10 giây im lặng bắt đầu gửi probe (Thay vì 1s)
-        int keepinterval = 3;    // Gửi lại sau mỗi 3 giây nếu không nhận phản hồi probe
+        int keepidle_time = 10;  
+        int keepinterval = 3;    
         int nodelay_on = 1;
+        int opt = 1;
 
-        ::setsockopt(local_fd, SOL_SOCKET,  SO_KEEPALIVE,  &keepalive_on, sizeof(keepalive_on));
-        ::setsockopt(local_fd, IPPROTO_TCP, TCP_KEEPIDLE,  &keepidle_time, sizeof(keepidle_time));
+        ::setsockopt(local_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+        ::setsockopt(local_fd, SOL_SOCKET, SO_KEEPALIVE, &keepalive_on, sizeof(keepalive_on));
+        ::setsockopt(local_fd, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle_time, sizeof(keepidle_time));
         ::setsockopt(local_fd, IPPROTO_TCP, TCP_KEEPINTVL, &keepinterval, sizeof(keepinterval));
-        ::setsockopt(local_fd, IPPROTO_TCP, TCP_NODELAY,   &nodelay_on, sizeof(nodelay_on));
+        ::setsockopt(local_fd, IPPROTO_TCP, TCP_NODELAY, &nodelay_on, sizeof(nodelay_on));
 
         sockaddr_in addr{};
         addr.sin_family = AF_INET;
@@ -46,32 +47,32 @@ namespace board::drivers::tcp_transport {
             return std::make_error_code(std::errc::invalid_argument);
         }
 
-        // 3. Chuyển sang Non-blocking mode
-        int flags = ::fcntl(local_fd, F_GETFL, 0);
-        ::fcntl(local_fd, F_SETFL, flags | O_NONBLOCK);
+        // 3. Lấy flags GỐC thuần túy trước khi thêm O_NONBLOCK
+        int original_flags = ::fcntl(local_fd, F_GETFL, 0);
+        ::fcntl(local_fd, F_SETFL, original_flags | O_NONBLOCK);
 
         // Yêu cầu kết nối
         int ret = ::connect(local_fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
 
-        // if (ret < 0 && errno != EINPROGRESS) {
-        //     ::close(local_fd);
-        //     return std::error_code(errno, std::system_category());
-        // }
         if (ret < 0) {
             if (errno != EINPROGRESS) {
-                // Lỗi kết nối thực sự (Sai IP, Server đóng cửa...)
-                ::close(socketFd_); socketFd_ = -1;
-                return std::make_error_code(std::errc::connection_refused);
+                // Đã SỬA: Đóng đúng local_fd đang mở lỗi
+                ::close(local_fd);
+                return std::error_code(errno, std::system_category());
             }
-            // Nếu errno == EINPROGRESS -> HOÀN TOÀN BÌNH THƯỜNG, chạy tiếp xuống select() bên dưới để đợi.
+            // Nếu là EINPROGRESS -> Chạy tiếp xuống select() bên dưới
         } else {
-            // Kết nối thành công ngay lập tức (Ít gặp ở chế độ Non-blocking nhưng vẫn có thể xảy ra)
-            connected_ = true;
-            ::fcntl(socketFd_, F_SETFL, flags); // Restore blocking
+            // Đã SỬA: Kết nối thành công ngay lập tức -> Cập nhật thông tin chuẩn xác vào Class
+            ::fcntl(local_fd, F_SETFL, original_flags); // Khôi phục blocking chuẩn cho local_fd
+            {
+                std::lock_guard<std::mutex> lk(portMutex_);
+                socketFd_ = local_fd;
+                connected_ = true;
+            }
             return {};
         }
 
-        // 4. Chờ kết nối bằng select() - KHÔNG giữ Mutex đoạn này để tránh deadlock hệ thống
+        // 4. Chờ kết nối bằng select()
         fd_set wfds;
         FD_ZERO(&wfds);
         FD_SET(local_fd, &wfds);
@@ -83,29 +84,29 @@ namespace board::drivers::tcp_transport {
 
         ret = ::select(local_fd + 1, nullptr, &wfds, nullptr, &tv);
 
-        if (ret == 0) { // Hết thời gian chờ (Timeout)
+        if (ret == 0) { // Timeout
             ::close(local_fd);
             return std::make_error_code(std::errc::timed_out);
         }
-        if (ret < 0) {  // Lỗi hệ thống select
+        if (ret < 0) {  // Lỗi select
             ::close(local_fd);
             return std::error_code(errno, std::system_category());
         }
 
-        // 5. Kiểm tra trạng thái Socket thật sự sau khi select báo hiệu ghi được
+        // 5. Kiểm tra lỗi ngầm của Socket sau khi select kích hoạt
         int err = 0;
         socklen_t errlen = sizeof(err);
         ::getsockopt(local_fd, SOL_SOCKET, SO_ERROR, &err, &errlen);
 
         if (err != 0) {
             ::close(local_fd);
-            return std::error_code(err, std::system_category()); // Trả đúng mã lỗi hệ thống (ví dụ: ECONNREFUSED)
+            return std::error_code(err, std::system_category()); 
         }
 
-        // 6. Trả lại trạng thái Blocking thông thường cho send/recv ổn định
-        ::fcntl(local_fd, F_SETFL, flags); 
+        // 6. Đã SỬA: Trả lại trạng thái Blocking GỐC chuẩn xác (loại bỏ hoàn toàn O_NONBLOCK)
+        ::fcntl(local_fd, F_SETFL, original_flags); 
 
-        // 7. Cập nhật kết quả vào biến Class một cách an toàn
+        // 7. Cập nhật kết quả vào biến Class an toàn
         {
             std::lock_guard<std::mutex> lk(portMutex_);
             socketFd_ = local_fd;
@@ -115,8 +116,10 @@ namespace board::drivers::tcp_transport {
         return {};
     }
 
+
     std::error_code BoardTcpTransport::reconnect(int delay_ms)
     {
+        
         return {};
     }
     bool BoardTcpTransport::isConnected() const

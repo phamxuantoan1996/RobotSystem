@@ -14,6 +14,7 @@ namespace board::application::adapter {
     : driver_(std::move(driver)),
     commandQueue_(std::move(command_queue)),
     boardEventBus_(std::make_unique<common::application::EventBus<board::domain::events::BoardEvent>>()),
+    reconnectService_(board::application::services::BoardReconnectConfig{.maxRetries = 100, .retryIntervalMs = 3000}),
     pollIntervalMs(poll_inter_val_ms)
     {
 
@@ -155,7 +156,24 @@ namespace board::application::adapter {
                     if(timeout_count == 5)
                     {
                         // pushlish disconnected event
+                        boardEventBus_->publish(board::domain::events::BoardDisconnectedEvent{});
                         timeout_count = 6;
+                        reconnectService_.startAsync(
+                            // ConnectFn
+                            [this]() -> std::error_code {
+                                return driver_->connect();
+                            },
+                            // OnSuccess
+                            [this]() {
+                                std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                                // navigatorEventBus_->publish(domain::events::NavigatorReconnectEvent{});
+                                std::cout << "Reconnect success\n";
+                            },
+                            // OnGiveUp — hết 5 lần retry
+                            [this](int attempts) {
+                                std::cerr << "[BoardController] reconnect failed after " << attempts << " attempts\n";
+                            }
+                        );
                     }
                     continue;
                 }
@@ -169,6 +187,23 @@ namespace board::application::adapter {
                         // publish disconnected event
                         boardEventBus_->publish(board::domain::events::BoardDisconnectedEvent{});
                         timeout_count = 6;
+                        reconnectService_.startAsync(
+                            // ConnectFn
+                            [this]() -> std::error_code {
+                                return driver_->connect();
+                            },
+                            // OnSuccess
+                            [this]() {
+                                std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                                // navigatorEventBus_->publish(domain::events::NavigatorReconnectEvent{});
+                                boardEventBus_->publish(board::domain::events::BoardReconnectedEvent{});
+                                std::cout << "Reconnect success\n";
+                            },
+                            // OnGiveUp — hết 5 lần retry
+                            [this](int attempts) {
+                                std::cerr << "[BoardController] reconnect failed after " << attempts << " attempts\n";
+                            }
+                        );
                     }
                     else {
                         timeout_count++;
@@ -178,7 +213,7 @@ namespace board::application::adapter {
                 else {
                     if(timeout_count == 6)
                     {
-                        boardEventBus_->publish(board::domain::events::BoardReconnectedEvent{});
+                        std::cout << "Reconnect event \n";
                     }
                     timeout_count = 0;
                     for(auto cb : callbackUpdateState_)

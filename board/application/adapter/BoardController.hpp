@@ -2,6 +2,7 @@
 #include "../board/domain/value_objects/BoardCommandQueue.hpp"
 #include "../board/domain/events/BoardEvent.hpp"
 #include "../board/ports/IBoardTransport.hpp"
+#include "../board/application/services/BoardReconnectService.hpp"
 #include "../common/ports/IEventBus.hpp"
 #include "../common/application/EventBus.hpp"
 #include <atomic>
@@ -49,6 +50,8 @@ namespace board::application::adapter {
             std::vector<CallbackUpdateState> callbackUpdateState_;
 
             std::unique_ptr<common::application::EventBus<board::domain::events::BoardEvent>> boardEventBus_;
+
+            board::application::services::BoardReconnectService reconnectService_;
 
             uint32_t pollIntervalMs = 100;
     };

@@ -9,6 +9,7 @@ add_library(board_lib
     domain/value_objects/BoardCommandBuilder.cpp
     domain/value_objects/BoardCommandQueue.cpp
     application/adapter/BoardController.cpp
+    application/services/BoardReconnectService.cpp
 )
 
 target_link_libraries(board_lib 
@@ -22,3 +23,4 @@ target_include_directories(robot_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/domain/e
 target_include_directories(robot_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/domain/events)
 target_include_directories(robot_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/domain/value_objects)
 target_include_directories(robot_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/application/adapter)
+target_include_directories(robot_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/application/services)
