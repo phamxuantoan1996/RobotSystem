@@ -383,13 +383,40 @@ int main(int argc,char *argv[])
             {
                 std::cout << "clear turn left\n";
             }
-            if constexpr (std::is_same_v<T, joystick::domain::events::JoyStickSetTurnRightEvent>)
+
+            else if constexpr (std::is_same_v<T, joystick::domain::events::JoyStickSetTurnRightEvent>)
             {
                 std::cout << "set turn right\n";
             }
             else if constexpr (std::is_same_v<T, joystick::domain::events::JoyStickClearTurnRightEvent>)
             {
                 std::cout << "clear turn right\n";
+            }
+
+            else if constexpr (std::is_same_v<T, joystick::domain::events::JoyStickSetForwardEvent>)
+            {
+                std::cout << "set forward\n";
+            }
+            else if constexpr (std::is_same_v<T, joystick::domain::events::JoyStickClearForwardEvent>)
+            {
+                std::cout << "clear forward\n";
+            }
+
+            else if constexpr (std::is_same_v<T, joystick::domain::events::JoyStickSetBackwardEvent>)
+            {
+                std::cout << "set backward\n";
+            }
+            else if constexpr (std::is_same_v<T, joystick::domain::events::JoyStickClearBackwardEvent>)
+            {
+                std::cout << "clear backward\n";
+            }
+            else if constexpr (std::is_same_v<T, joystick::domain::events::JoyStickEnableEvent>)
+            {
+                std::cout << "set enable\n";
+            }
+            else if constexpr (std::is_same_v<T, joystick::domain::events::JoyStickDisableEvent>)
+            {
+                std::cout << "clear disable\n";
             }
 
         },event);
@@ -401,22 +428,17 @@ int main(int argc,char *argv[])
         .port = 5000,
         .timeout = 3000});
 
-    auto ec = boardDriver->connect();
-    if(ec)
-    {
-        std::cout << "1\n";
-        return 1;
-    }
-
     auto boardCommandQueue = std::make_shared<board::domain::value_objects::BoardCommandQueue>();
     auto boardController = std::make_shared<board::application::adapter::BoardController>(std::move(boardDriver),boardCommandQueue,100);
     boardController->setCallbackUpdateState([joystickDriver](const std::string& raw_state){
         joystickDriver->updateState(raw_state);
     });
 
-    ec = boardController->connect();
+    auto ec = boardController->connect();
     if(ec)
     {
+        // std::cout << "2\n";
+        std::cout << "2, error value: " << ec << "\n";
         return 1;
     }
 
